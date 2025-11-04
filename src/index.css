@@ -143,10 +143,24 @@ All colors MUST be HSL.
 
 @layer utilities {
   .shadow-notion {
-    box-shadow: 0 1px 3px hsl(215 25% 15% / 0.1);
+    box-shadow: 0 1px 3px hsl(215 25% 15% / 0.1), 0 1px 2px hsl(215 25% 15% / 0.06);
+  }
+
+  .shadow-notion-hover {
+    box-shadow: 0 4px 8px hsl(215 25% 15% / 0.12), 0 2px 4px hsl(215 25% 15% / 0.08);
   }
 
   .transition-smooth {
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .transition-fast {
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-effect {
+    background: hsl(var(--card) / 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid hsl(var(--border) / 0.5);
   }
 }

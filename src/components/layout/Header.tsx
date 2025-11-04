@@ -20,8 +20,8 @@ export function Header({ title, showNavigation = false }: HeaderProps) {
   const navigate = useNavigate();
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-card px-4 shadow-sm">
-      <SidebarTrigger />
+    <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-card px-4 shadow-sm backdrop-blur-sm bg-card/95">
+      <SidebarTrigger className="transition-fast" />
       
       {showNavigation && (
         <div className="flex gap-1">
@@ -29,7 +29,8 @@ export function Header({ title, showNavigation = false }: HeaderProps) {
             variant="ghost"
             size="icon"
             onClick={() => navigate(-1)}
-            className="h-8 w-8"
+            className="h-8 w-8 transition-fast"
+            title="Atrás"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -37,24 +38,25 @@ export function Header({ title, showNavigation = false }: HeaderProps) {
             variant="ghost"
             size="icon"
             onClick={() => navigate(1)}
-            className="h-8 w-8"
+            className="h-8 w-8 transition-fast"
+            title="Adelante"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       )}
 
-      <h1 className="text-lg font-semibold">{title}</h1>
+      <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
 
       <div className="ml-auto flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="relative">
+        <Button variant="ghost" size="icon" className="relative transition-fast" title="Notificaciones">
           <Bell className="h-5 w-5" />
-          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-destructive" />
+          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-destructive animate-pulse" />
         </Button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="transition-fast" title="Perfil de usuario">
               <User className="h-5 w-5" />
             </Button>
           </DropdownMenuTrigger>
@@ -68,11 +70,11 @@ export function Header({ title, showNavigation = false }: HeaderProps) {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer transition-fast">
               <User className="mr-2 h-4 w-4" />
               Perfil
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive">
+            <DropdownMenuItem className="text-destructive cursor-pointer transition-fast">
               <LogOut className="mr-2 h-4 w-4" />
               Salir
             </DropdownMenuItem>

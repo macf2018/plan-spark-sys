@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   Clock,
   TrendingUp,
+  Activity,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -19,14 +20,14 @@ export default function Dashboard() {
       
       <main className="flex-1 p-6 space-y-6">
         <div>
-          <h2 className="text-3xl font-bold">Dashboard Principal</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Dashboard Principal</h2>
           <p className="text-muted-foreground mt-1">
             Visión general del sistema de mantenimiento eléctrico
           </p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="shadow-notion">
+          <Card className="shadow-notion hover:shadow-notion-hover transition-smooth">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Total Equipos
@@ -39,7 +40,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="shadow-notion">
+          <Card className="shadow-notion hover:shadow-notion-hover transition-smooth">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Mantenimientos Activos
@@ -52,7 +53,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="shadow-notion">
+          <Card className="shadow-notion hover:shadow-notion-hover transition-smooth">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Completados (Mes)
@@ -65,7 +66,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="shadow-notion">
+          <Card className="shadow-notion hover:shadow-notion-hover transition-smooth">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Alertas Críticas
@@ -79,85 +80,118 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <Link to="/planificacion">
-            <Card className="shadow-notion hover:shadow-md transition-smooth cursor-pointer border-primary/20 hover:border-primary/40">
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-                    <Calendar className="h-6 w-6 text-primary" />
+        <div>
+          <h3 className="text-xl font-semibold mb-4">Módulos del Sistema</h3>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Link to="/planificacion">
+              <Card className="shadow-notion hover:shadow-notion-hover transition-smooth cursor-pointer border-primary/20 hover:border-primary/40 h-full group">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-smooth group-hover:bg-primary/20">
+                      <Calendar className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-base">Planificación</CardTitle>
+                      <p className="text-sm text-muted-foreground">
+                        Gestión de planes
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <CardTitle>Planificación</CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      Gestión de planes
-                    </p>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    Crea y administra planes de mantenimiento preventivo y correctivo
+                  </p>
+                  <Button variant="link" className="mt-2 px-0 h-auto">
+                    Acceder al módulo →
+                  </Button>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to="/ejecucion">
+              <Card className="shadow-notion hover:shadow-notion-hover transition-smooth cursor-pointer border-accent/20 hover:border-accent/40 h-full group">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent/10 transition-smooth group-hover:bg-accent/20">
+                      <ClipboardCheck className="h-6 w-6 text-accent" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-base">Ejecución</CardTitle>
+                      <p className="text-sm text-muted-foreground">
+                        Órdenes de trabajo
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Crea y administra planes de mantenimiento preventivo y correctivo
-                </p>
-                <Button variant="link" className="mt-2 px-0">
-                  Acceder al módulo →
-                </Button>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Card className="shadow-notion hover:shadow-md transition-smooth cursor-pointer">
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent/10">
-                  <ClipboardCheck className="h-6 w-6 text-accent" />
-                </div>
-                <div>
-                  <CardTitle>Ejecución</CardTitle>
+                </CardHeader>
+                <CardContent>
                   <p className="text-sm text-muted-foreground">
-                    Órdenes de trabajo
+                    Ejecuta y registra actividades de mantenimiento en tiempo real
                   </p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Ejecuta y registra actividades de mantenimiento en tiempo real
-              </p>
-              <Button variant="link" className="mt-2 px-0">
-                Acceder al módulo →
-              </Button>
-            </CardContent>
-          </Card>
+                  <Button variant="link" className="mt-2 px-0 h-auto">
+                    Acceder al módulo →
+                  </Button>
+                </CardContent>
+              </Card>
+            </Link>
 
-          <Card className="shadow-notion hover:shadow-md transition-smooth cursor-pointer">
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-warning/10">
-                  <BarChart3 className="h-6 w-6 text-warning" />
-                </div>
-                <div>
-                  <CardTitle>Reportes y Analytics</CardTitle>
+            <Link to="/seguimiento">
+              <Card className="shadow-notion hover:shadow-notion-hover transition-smooth cursor-pointer border-warning/20 hover:border-warning/40 h-full group">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-warning/10 transition-smooth group-hover:bg-warning/20">
+                      <Activity className="h-6 w-6 text-warning" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-base">Control y Seguimiento</CardTitle>
+                      <p className="text-sm text-muted-foreground">
+                        KPIs y monitoreo
+                      </p>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
                   <p className="text-sm text-muted-foreground">
-                    Análisis y métricas
+                    Monitorea el desempeño y controla las operaciones de mantenimiento
                   </p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Visualiza indicadores y genera reportes de desempeño
-              </p>
-              <Button variant="link" className="mt-2 px-0">
-                Acceder al módulo →
-              </Button>
-            </CardContent>
-          </Card>
+                  <Button variant="link" className="mt-2 px-0 h-auto">
+                    Acceder al módulo →
+                  </Button>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to="/reportes">
+              <Card className="shadow-notion hover:shadow-notion-hover transition-smooth cursor-pointer border-destructive/20 hover:border-destructive/40 h-full group">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-destructive/10 transition-smooth group-hover:bg-destructive/20">
+                      <BarChart3 className="h-6 w-6 text-destructive" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-base">Reportes y Analytics</CardTitle>
+                      <p className="text-sm text-muted-foreground">
+                        Análisis y métricas
+                      </p>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    Visualiza indicadores y genera reportes de desempeño
+                  </p>
+                  <Button variant="link" className="mt-2 px-0 h-auto">
+                    Acceder al módulo →
+                  </Button>
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
         </div>
 
         <Card className="shadow-notion">
           <CardHeader>
-            <CardTitle>Actividad Reciente</CardTitle>
+            <CardTitle className="text-xl">Actividad Reciente</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -181,7 +215,7 @@ export default function Dashboard() {
                   type: "success",
                 },
               ].map((activity, i) => (
-                <div key={i} className="flex items-start gap-3 pb-4 border-b last:border-0">
+                <div key={i} className="flex items-start gap-3 pb-4 border-b last:border-0 transition-fast hover:bg-muted/30 -mx-2 px-2 rounded-md">
                   <div
                     className={`mt-1 h-2 w-2 rounded-full ${
                       activity.type === "success" ? "bg-success" : "bg-warning"
