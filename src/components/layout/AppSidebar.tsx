@@ -3,6 +3,7 @@ import {
   Calendar,
   ClipboardCheck,
   BarChart3,
+  Activity,
   Wrench,
   Users,
   Package,
@@ -26,6 +27,7 @@ const mainModules = [
   { title: "Dashboard", url: "/", icon: Home },
   { title: "Planificación", url: "/planificacion", icon: Calendar },
   { title: "Ejecución", url: "/ejecucion", icon: ClipboardCheck },
+  { title: "Control y Seguimiento", url: "/seguimiento", icon: Activity },
   { title: "Reportes y Analytics", url: "/reportes", icon: BarChart3 },
 ];
 
