@@ -14,7 +14,151 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      equipos: {
+        Row: {
+          anio_fabricacion: number | null
+          created_at: string | null
+          created_by: string | null
+          estado: Database["public"]["Enums"]["estado_equipo"]
+          fecha_ingreso: string
+          id: string
+          marca: string | null
+          modelo: string | null
+          nombre_equipo: string
+          nro_serie: string | null
+          observaciones: string | null
+          proveedor_asociado: string | null
+          proximo_mantenimiento: string | null
+          responsable_asignado: string | null
+          sala: string | null
+          tipo: Database["public"]["Enums"]["tipo_equipo"]
+          ubicacion_fisica: string | null
+          updated_at: string | null
+          version_revision: string | null
+          vida_util_estimada: number | null
+          zona: string | null
+        }
+        Insert: {
+          anio_fabricacion?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          estado?: Database["public"]["Enums"]["estado_equipo"]
+          fecha_ingreso?: string
+          id?: string
+          marca?: string | null
+          modelo?: string | null
+          nombre_equipo: string
+          nro_serie?: string | null
+          observaciones?: string | null
+          proveedor_asociado?: string | null
+          proximo_mantenimiento?: string | null
+          responsable_asignado?: string | null
+          sala?: string | null
+          tipo: Database["public"]["Enums"]["tipo_equipo"]
+          ubicacion_fisica?: string | null
+          updated_at?: string | null
+          version_revision?: string | null
+          vida_util_estimada?: number | null
+          zona?: string | null
+        }
+        Update: {
+          anio_fabricacion?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          estado?: Database["public"]["Enums"]["estado_equipo"]
+          fecha_ingreso?: string
+          id?: string
+          marca?: string | null
+          modelo?: string | null
+          nombre_equipo?: string
+          nro_serie?: string | null
+          observaciones?: string | null
+          proveedor_asociado?: string | null
+          proximo_mantenimiento?: string | null
+          responsable_asignado?: string | null
+          sala?: string | null
+          tipo?: Database["public"]["Enums"]["tipo_equipo"]
+          ubicacion_fisica?: string | null
+          updated_at?: string | null
+          version_revision?: string | null
+          vida_util_estimada?: number | null
+          zona?: string | null
+        }
+        Relationships: []
+      }
+      equipos_historial_estado: {
+        Row: {
+          equipo_id: string
+          estado_anterior: Database["public"]["Enums"]["estado_equipo"] | null
+          estado_nuevo: Database["public"]["Enums"]["estado_equipo"]
+          fecha_cambio: string | null
+          id: string
+          observacion: string | null
+          usuario_id: string | null
+        }
+        Insert: {
+          equipo_id: string
+          estado_anterior?: Database["public"]["Enums"]["estado_equipo"] | null
+          estado_nuevo: Database["public"]["Enums"]["estado_equipo"]
+          fecha_cambio?: string | null
+          id?: string
+          observacion?: string | null
+          usuario_id?: string | null
+        }
+        Update: {
+          equipo_id?: string
+          estado_anterior?: Database["public"]["Enums"]["estado_equipo"] | null
+          estado_nuevo?: Database["public"]["Enums"]["estado_equipo"]
+          fecha_cambio?: string | null
+          id?: string
+          observacion?: string | null
+          usuario_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipos_historial_estado_equipo_id_fkey"
+            columns: ["equipo_id"]
+            isOneToOne: false
+            referencedRelation: "equipos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipos_logs: {
+        Row: {
+          accion: string
+          descripcion: string | null
+          equipo_id: string | null
+          fecha: string | null
+          id: string
+          usuario_id: string | null
+        }
+        Insert: {
+          accion: string
+          descripcion?: string | null
+          equipo_id?: string | null
+          fecha?: string | null
+          id?: string
+          usuario_id?: string | null
+        }
+        Update: {
+          accion?: string
+          descripcion?: string | null
+          equipo_id?: string | null
+          fecha?: string | null
+          id?: string
+          usuario_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipos_logs_equipo_id_fkey"
+            columns: ["equipo_id"]
+            isOneToOne: false
+            referencedRelation: "equipos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +167,19 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      estado_equipo:
+        | "operativo"
+        | "en_reparacion"
+        | "en_mantenimiento"
+        | "fuera_de_servicio"
+        | "obsoleto"
+        | "dado_de_baja"
+      tipo_equipo:
+        | "electrico"
+        | "mecanico"
+        | "electronico"
+        | "medicion"
+        | "otros"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +306,22 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      estado_equipo: [
+        "operativo",
+        "en_reparacion",
+        "en_mantenimiento",
+        "fuera_de_servicio",
+        "obsoleto",
+        "dado_de_baja",
+      ],
+      tipo_equipo: [
+        "electrico",
+        "mecanico",
+        "electronico",
+        "medicion",
+        "otros",
+      ],
+    },
   },
 } as const
