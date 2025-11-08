@@ -451,14 +451,159 @@ export type Database = {
           },
         ]
       }
+      personal: {
+        Row: {
+          cargo: string | null
+          correo_electronico: string
+          created_at: string | null
+          created_by: string | null
+          empresa_proveedor: string | null
+          estado: Database["public"]["Enums"]["estado_personal"]
+          fecha_inicio_vigencia: string
+          fecha_termino_vigencia: string | null
+          id: string
+          nombre_completo: string
+          observaciones: string | null
+          require_cambio_clave: boolean | null
+          telefono: string | null
+          ultimo_acceso: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          cargo?: string | null
+          correo_electronico: string
+          created_at?: string | null
+          created_by?: string | null
+          empresa_proveedor?: string | null
+          estado?: Database["public"]["Enums"]["estado_personal"]
+          fecha_inicio_vigencia?: string
+          fecha_termino_vigencia?: string | null
+          id?: string
+          nombre_completo: string
+          observaciones?: string | null
+          require_cambio_clave?: boolean | null
+          telefono?: string | null
+          ultimo_acceso?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          cargo?: string | null
+          correo_electronico?: string
+          created_at?: string | null
+          created_by?: string | null
+          empresa_proveedor?: string | null
+          estado?: Database["public"]["Enums"]["estado_personal"]
+          fecha_inicio_vigencia?: string
+          fecha_termino_vigencia?: string | null
+          id?: string
+          nombre_completo?: string
+          observaciones?: string | null
+          require_cambio_clave?: boolean | null
+          telefono?: string | null
+          ultimo_acceso?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      personal_auditoria: {
+        Row: {
+          accion: string
+          campos_modificados: Json | null
+          descripcion: string | null
+          fecha: string | null
+          id: string
+          personal_id: string | null
+          tipo_log: string | null
+          usuario_id: string | null
+          valor_anterior: Json | null
+          valor_nuevo: Json | null
+        }
+        Insert: {
+          accion: string
+          campos_modificados?: Json | null
+          descripcion?: string | null
+          fecha?: string | null
+          id?: string
+          personal_id?: string | null
+          tipo_log?: string | null
+          usuario_id?: string | null
+          valor_anterior?: Json | null
+          valor_nuevo?: Json | null
+        }
+        Update: {
+          accion?: string
+          campos_modificados?: Json | null
+          descripcion?: string | null
+          fecha?: string | null
+          id?: string
+          personal_id?: string | null
+          tipo_log?: string | null
+          usuario_id?: string | null
+          valor_anterior?: Json | null
+          valor_nuevo?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personal_auditoria_personal_id_fkey"
+            columns: ["personal_id"]
+            isOneToOne: false
+            referencedRelation: "personal"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          asignado_por: string | null
+          fecha_asignacion: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          asignado_por?: string | null
+          fecha_asignacion?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          asignado_por?: string | null
+          fecha_asignacion?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      actualizar_estado_vigencia_personal: { Args: never; Returns: undefined }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_admin_or_system: { Args: never; Returns: boolean }
     }
     Enums: {
+      app_role:
+        | "administrador_general"
+        | "supervisor_tecnico"
+        | "operador_tecnico"
+        | "proveedor_contratista"
+        | "jefatura_gerencia"
+        | "usuario_proceso_sistema"
+        | "usuario_tecnologia"
+        | "invitado"
       estado_equipo:
         | "operativo"
         | "en_reparacion"
@@ -466,6 +611,7 @@ export type Database = {
         | "fuera_de_servicio"
         | "obsoleto"
         | "dado_de_baja"
+      estado_personal: "activo" | "inactivo" | "suspendido" | "vencido"
       tipo_equipo:
         | "electrico"
         | "mecanico"
@@ -599,6 +745,16 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: [
+        "administrador_general",
+        "supervisor_tecnico",
+        "operador_tecnico",
+        "proveedor_contratista",
+        "jefatura_gerencia",
+        "usuario_proceso_sistema",
+        "usuario_tecnologia",
+        "invitado",
+      ],
       estado_equipo: [
         "operativo",
         "en_reparacion",
@@ -607,6 +763,7 @@ export const Constants = {
         "obsoleto",
         "dado_de_baja",
       ],
+      estado_personal: ["activo", "inactivo", "suspendido", "vencido"],
       tipo_equipo: [
         "electrico",
         "mecanico",
