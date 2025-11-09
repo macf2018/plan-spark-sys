@@ -21,27 +21,26 @@ type TipoEquipo = 'electrico' | 'mecanico' | 'electronico' | 'medicion' | 'otros
 interface EquipmentFormData {
   nombre_equipo: string;
   tipo: TipoEquipo;
-  marca_id?: string;
-  modelo_id?: string;
-  version_revision?: string;
-  nro_serie?: string;
-  anio_fabricacion?: number;
+  marca: string;
+  modelo: string;
+  version_revision: string;
+  nro_serie: string;
+  anio_fabricacion: number;
+  ubicacion_fisica: string;
+  zona: string;
+  sala: string;
+  tramo_id: string;
+  sentido_id: string;
+  pk_id: string;
+  shelter_id: string;
+  portico_id: string;
   vida_util_estimada?: number;
-  fecha_ingreso: string;
   proximo_mantenimiento?: string;
-  estado: EstadoEquipo;
-  tramo_id?: string;
-  sentido_id?: string;
-  pk_id?: string;
-  shelter_id?: string;
-  portico_id?: string;
-  ubicacion_fisica?: string;
-  zona?: string;
-  sala?: string;
   responsable_asignado?: string;
   proveedor_asociado?: string;
   observaciones?: string;
-  fecha_inicio_estado?: string;
+  marca_id?: string;
+  modelo_id?: string;
   tecnico_responsable_estado?: string;
 }
 
@@ -60,27 +59,17 @@ const EquipmentForm = ({ equipmentId, onClose }: EquipmentFormProps) => {
   const [pks, setPks] = useState<Catalogo[]>([]);
   const [shelters, setShelters] = useState<Catalogo[]>([]);
   const [porticos, setPorticos] = useState<Catalogo[]>([]);
-  const [marcas, setMarcas] = useState<Catalogo[]>([]);
-  const [modelos, setModelos] = useState<Catalogo[]>([]);
   
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<EquipmentFormData>({
     defaultValues: {
-      fecha_ingreso: new Date().toISOString().split('T')[0],
-      estado: 'operativo',
       tipo: 'electrico'
     }
   });
 
   const selectedTipo = watch("tipo");
-  const selectedEstado = watch("estado");
-  const selectedMarcaId = watch("marca_id");
 
   const handleTipoChange = (value: string) => {
     setValue("tipo", value as TipoEquipo);
-  };
-
-  const handleEstadoChange = (value: string) => {
-    setValue("estado", value as EstadoEquipo);
   };
 
   useEffect(() => {
@@ -90,21 +79,14 @@ const EquipmentForm = ({ equipmentId, onClose }: EquipmentFormProps) => {
     }
   }, [equipmentId]);
 
-  useEffect(() => {
-    if (selectedMarcaId) {
-      fetchModelos(selectedMarcaId);
-    }
-  }, [selectedMarcaId]);
-
   const fetchCatalogos = async () => {
     try {
-      const [tramosRes, sentidosRes, pksRes, sheltersRes, porticosRes, marcasRes] = await Promise.all([
+      const [tramosRes, sentidosRes, pksRes, sheltersRes, porticosRes] = await Promise.all([
         supabase.from("catalogo_tramos").select("*").eq("activo", true),
         supabase.from("catalogo_sentidos").select("*").eq("activo", true),
         supabase.from("catalogo_pks").select("*").eq("activo", true),
         supabase.from("catalogo_shelters").select("*").eq("activo", true),
         supabase.from("catalogo_porticos").select("*").eq("activo", true),
-        supabase.from("catalogo_marcas").select("*").eq("activo", true),
       ]);
 
       if (tramosRes.data) setTramos(tramosRes.data);
@@ -112,24 +94,8 @@ const EquipmentForm = ({ equipmentId, onClose }: EquipmentFormProps) => {
       if (pksRes.data) setPks(pksRes.data);
       if (sheltersRes.data) setShelters(sheltersRes.data);
       if (porticosRes.data) setPorticos(porticosRes.data);
-      if (marcasRes.data) setMarcas(marcasRes.data);
     } catch (error: any) {
       toast.error("Error al cargar catálogos");
-    }
-  };
-
-  const fetchModelos = async (marcaId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("catalogo_modelos")
-        .select("*")
-        .eq("marca_id", marcaId)
-        .eq("activo", true);
-
-      if (error) throw error;
-      if (data) setModelos(data);
-    } catch (error: any) {
-      toast.error("Error al cargar modelos");
     }
   };
 
@@ -144,7 +110,7 @@ const EquipmentForm = ({ equipmentId, onClose }: EquipmentFormProps) => {
       if (error) throw error;
 
       Object.entries(data).forEach(([key, value]) => {
-        if (key === 'fecha_ingreso' || key === 'proximo_mantenimiento') {
+        if (key === 'proximo_mantenimiento') {
           setValue(key as any, value ? new Date(value).toISOString().split('T')[0] : '');
         } else {
           setValue(key as any, value);
@@ -159,21 +125,9 @@ const EquipmentForm = ({ equipmentId, onClose }: EquipmentFormProps) => {
     try {
       setLoading(true);
 
-      // Validaciones
-      if ((data.estado === 'en_reparacion' || data.estado === 'en_mantenimiento') && 
-          (!data.fecha_inicio_estado || !data.tecnico_responsable_estado)) {
-        toast.error("Para estados 'En reparación' o 'En mantenimiento' debe especificar fecha de inicio y técnico responsable");
-        return;
-      }
-
-      if (new Date(data.fecha_ingreso) > new Date()) {
-        toast.error("La fecha de ingreso no puede ser futura");
-        return;
-      }
-
       const equipmentData = {
         ...data,
-        anio_fabricacion: data.anio_fabricacion ? Number(data.anio_fabricacion) : null,
+        anio_fabricacion: Number(data.anio_fabricacion),
         vida_util_estimada: data.vida_util_estimada ? Number(data.vida_util_estimada) : null,
       };
 
@@ -213,15 +167,6 @@ const EquipmentForm = ({ equipmentId, onClose }: EquipmentFormProps) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      {(selectedEstado === 'en_reparacion' || selectedEstado === 'en_mantenimiento') && (
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Para este estado debe especificar fecha de inicio y técnico responsable
-          </AlertDescription>
-        </Alert>
-      )}
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="nombre_equipo">Nombre del Equipo *</Label>
@@ -252,58 +197,64 @@ const EquipmentForm = ({ equipmentId, onClose }: EquipmentFormProps) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="marca_id">Marca *</Label>
-          <Select value={watch("marca_id")} onValueChange={(value) => {
-            setValue("marca_id", value);
-            setValue("modelo_id", "");
-          }}>
-            <SelectTrigger>
-              <SelectValue placeholder="Seleccionar marca" />
-            </SelectTrigger>
-            <SelectContent>
-              {marcas.map((marca) => (
-                <SelectItem key={marca.id} value={marca.id}>
-                  {marca.nombre}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Label htmlFor="marca">Marca *</Label>
+          <Input
+            id="marca"
+            {...register("marca", { required: "Este campo es obligatorio" })}
+            placeholder="Ej: ABB, Siemens, Schneider"
+          />
+          {errors.marca && (
+            <p className="text-sm text-destructive">{errors.marca.message}</p>
+          )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="modelo_id">Modelo *</Label>
-          <Select value={watch("modelo_id")} onValueChange={(value) => setValue("modelo_id", value)} disabled={!selectedMarcaId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Seleccionar modelo" />
-            </SelectTrigger>
-            <SelectContent>
-              {modelos.map((modelo) => (
-                <SelectItem key={modelo.id} value={modelo.id}>
-                  {modelo.nombre}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Label htmlFor="modelo">Modelo *</Label>
+          <Input
+            id="modelo"
+            {...register("modelo", { required: "Este campo es obligatorio" })}
+            placeholder="Ej: T-500, XR-3000"
+          />
+          {errors.modelo && (
+            <p className="text-sm text-destructive">{errors.modelo.message}</p>
+          )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="version_revision">Versión/Revisión</Label>
-          <Input id="version_revision" {...register("version_revision")} placeholder="Ej: v2.1" />
+          <Label htmlFor="version_revision">Versión/Revisión *</Label>
+          <Input
+            id="version_revision"
+            {...register("version_revision", { required: "Este campo es obligatorio" })}
+            placeholder="Ej: v2.1, Rev.A"
+          />
+          {errors.version_revision && (
+            <p className="text-sm text-destructive">{errors.version_revision.message}</p>
+          )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="nro_serie">Número de Serie</Label>
-          <Input id="nro_serie" {...register("nro_serie")} placeholder="Ej: SN123456" />
+          <Label htmlFor="nro_serie">Número de Serie *</Label>
+          <Input
+            id="nro_serie"
+            {...register("nro_serie", { required: "Este campo es obligatorio" })}
+            placeholder="Ej: SN123456"
+          />
+          {errors.nro_serie && (
+            <p className="text-sm text-destructive">{errors.nro_serie.message}</p>
+          )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="anio_fabricacion">Año de Fabricación</Label>
+          <Label htmlFor="anio_fabricacion">Año de Fabricación *</Label>
           <Input
             id="anio_fabricacion"
             type="number"
-            {...register("anio_fabricacion")}
+            {...register("anio_fabricacion", { required: "Este campo es obligatorio" })}
             placeholder="Ej: 2020"
           />
+          {errors.anio_fabricacion && (
+            <p className="text-sm text-destructive">{errors.anio_fabricacion.message}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -317,11 +268,48 @@ const EquipmentForm = ({ equipmentId, onClose }: EquipmentFormProps) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="fecha_ingreso">Fecha de Ingreso *</Label>
+          <Label htmlFor="ubicacion_fisica">Ubicación Física *</Label>
           <Input
-            id="fecha_ingreso"
-            type="date"
-            {...register("fecha_ingreso", { required: "Este campo es obligatorio" })}
+            id="ubicacion_fisica"
+            {...register("ubicacion_fisica", { required: "Este campo es obligatorio" })}
+            placeholder="Ej: Planta Norte, Sector B"
+          />
+          {errors.ubicacion_fisica && (
+            <p className="text-sm text-destructive">{errors.ubicacion_fisica.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="zona">Zona *</Label>
+          <Input
+            id="zona"
+            {...register("zona", { required: "Este campo es obligatorio" })}
+            placeholder="Ej: Zona A, Zona Industrial"
+          />
+          {errors.zona && (
+            <p className="text-sm text-destructive">{errors.zona.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="sala">Sala *</Label>
+          <Input
+            id="sala"
+            {...register("sala", { required: "Este campo es obligatorio" })}
+            placeholder="Ej: Sala 101, Subestación 3"
+          />
+          {errors.sala && (
+            <p className="text-sm text-destructive">{errors.sala.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="vida_util_estimada">Vida Útil Estimada (años)</Label>
+          <Input
+            id="vida_util_estimada"
+            type="number"
+            {...register("vida_util_estimada")}
+            placeholder="Ej: 10"
           />
         </div>
 
@@ -332,38 +320,6 @@ const EquipmentForm = ({ equipmentId, onClose }: EquipmentFormProps) => {
             type="date"
             {...register("proximo_mantenimiento")}
           />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="estado">Estado *</Label>
-          <Select value={selectedEstado} onValueChange={handleEstadoChange}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="operativo">Operativo</SelectItem>
-              <SelectItem value="en_reparacion">En reparación</SelectItem>
-              <SelectItem value="en_mantenimiento">En mantenimiento</SelectItem>
-              <SelectItem value="fuera_de_servicio">Fuera de servicio</SelectItem>
-              <SelectItem value="obsoleto">Obsoleto</SelectItem>
-              <SelectItem value="dado_de_baja">Dado de baja</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="ubicacion_fisica">Ubicación Física</Label>
-          <Input id="ubicacion_fisica" {...register("ubicacion_fisica")} placeholder="Ej: Planta Norte" />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="zona">Zona</Label>
-          <Input id="zona" {...register("zona")} placeholder="Ej: Zona A" />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="sala">Sala</Label>
-          <Input id="sala" {...register("sala")} placeholder="Ej: Sala 101" />
         </div>
 
         <div className="space-y-2">
@@ -378,7 +334,10 @@ const EquipmentForm = ({ equipmentId, onClose }: EquipmentFormProps) => {
 
         <div className="space-y-2">
           <Label htmlFor="tramo_id">Tramo *</Label>
-          <Select value={watch("tramo_id")} onValueChange={(value) => setValue("tramo_id", value)}>
+          <Select
+            value={watch("tramo_id")}
+            onValueChange={(value) => setValue("tramo_id", value)}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Seleccionar tramo" />
             </SelectTrigger>
@@ -390,11 +349,17 @@ const EquipmentForm = ({ equipmentId, onClose }: EquipmentFormProps) => {
               ))}
             </SelectContent>
           </Select>
+          {errors.tramo_id && (
+            <p className="text-sm text-destructive">{errors.tramo_id.message}</p>
+          )}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="sentido_id">Sentido *</Label>
-          <Select value={watch("sentido_id")} onValueChange={(value) => setValue("sentido_id", value)}>
+          <Select
+            value={watch("sentido_id")}
+            onValueChange={(value) => setValue("sentido_id", value)}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Seleccionar sentido" />
             </SelectTrigger>
@@ -406,11 +371,17 @@ const EquipmentForm = ({ equipmentId, onClose }: EquipmentFormProps) => {
               ))}
             </SelectContent>
           </Select>
+          {errors.sentido_id && (
+            <p className="text-sm text-destructive">{errors.sentido_id.message}</p>
+          )}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="pk_id">PK *</Label>
-          <Select value={watch("pk_id")} onValueChange={(value) => setValue("pk_id", value)}>
+          <Select
+            value={watch("pk_id")}
+            onValueChange={(value) => setValue("pk_id", value)}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Seleccionar PK" />
             </SelectTrigger>
@@ -422,11 +393,17 @@ const EquipmentForm = ({ equipmentId, onClose }: EquipmentFormProps) => {
               ))}
             </SelectContent>
           </Select>
+          {errors.pk_id && (
+            <p className="text-sm text-destructive">{errors.pk_id.message}</p>
+          )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="shelter_id">Shelter</Label>
-          <Select value={watch("shelter_id") || ""} onValueChange={(value) => setValue("shelter_id", value)}>
+          <Label htmlFor="shelter_id">Shelter *</Label>
+          <Select
+            value={watch("shelter_id")}
+            onValueChange={(value) => setValue("shelter_id", value)}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Seleccionar shelter" />
             </SelectTrigger>
@@ -438,11 +415,17 @@ const EquipmentForm = ({ equipmentId, onClose }: EquipmentFormProps) => {
               ))}
             </SelectContent>
           </Select>
+          {errors.shelter_id && (
+            <p className="text-sm text-destructive">{errors.shelter_id.message}</p>
+          )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="portico_id">Pórtico</Label>
-          <Select value={watch("portico_id") || ""} onValueChange={(value) => setValue("portico_id", value)}>
+          <Label htmlFor="portico_id">Pórtico *</Label>
+          <Select
+            value={watch("portico_id")}
+            onValueChange={(value) => setValue("portico_id", value)}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Seleccionar pórtico" />
             </SelectTrigger>
@@ -454,29 +437,10 @@ const EquipmentForm = ({ equipmentId, onClose }: EquipmentFormProps) => {
               ))}
             </SelectContent>
           </Select>
+          {errors.portico_id && (
+            <p className="text-sm text-destructive">{errors.portico_id.message}</p>
+          )}
         </div>
-
-        {(selectedEstado === 'en_reparacion' || selectedEstado === 'en_mantenimiento') && (
-          <>
-            <div className="space-y-2">
-              <Label htmlFor="fecha_inicio_estado">Fecha Inicio Estado *</Label>
-              <Input
-                id="fecha_inicio_estado"
-                type="date"
-                {...register("fecha_inicio_estado")}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="tecnico_responsable_estado">Técnico Responsable *</Label>
-              <Input
-                id="tecnico_responsable_estado"
-                {...register("tecnico_responsable_estado")}
-                placeholder="Nombre del técnico"
-              />
-            </div>
-          </>
-        )}
       </div>
 
       <div className="space-y-2">

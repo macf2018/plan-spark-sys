@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -13,25 +13,79 @@ interface BulkUploadProps {
   onClose: () => void;
 }
 
-type EstadoEquipo = 'operativo' | 'en_reparacion' | 'en_mantenimiento' | 'fuera_de_servicio' | 'obsoleto' | 'dado_de_baja';
 type TipoEquipo = 'electrico' | 'mecanico' | 'electronico' | 'medicion' | 'otros';
 
 interface EquipmentRow {
   nombre_equipo: string;
   tipo: TipoEquipo;
-  marca?: string;
-  modelo?: string;
-  nro_serie?: string;
-  estado: EstadoEquipo;
-  ubicacion_fisica?: string;
+  marca: string;
+  modelo: string;
+  version_revision: string;
+  nro_serie: string;
+  anio_fabricacion: number;
+  ubicacion_fisica: string;
+  zona: string;
+  sala: string;
+  tramo_id: string;
+  sentido_id: string;
+  pk_id: string;
+  shelter_id: string;
+  portico_id: string;
+  vida_util_estimada?: number;
+  proximo_mantenimiento?: string;
   responsable_asignado?: string;
+  proveedor_asociado?: string;
+  observaciones?: string;
+}
+
+interface Catalogo {
+  id: string;
+  nombre?: string;
+  pk?: string;
 }
 
 const BulkUpload = ({ onClose }: BulkUploadProps) => {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<EquipmentRow[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
+  const [tramos, setTramos] = useState<Catalogo[]>([]);
+  const [sentidos, setSentidos] = useState<Catalogo[]>([]);
+  const [pks, setPks] = useState<Catalogo[]>([]);
+  const [shelters, setShelters] = useState<Catalogo[]>([]);
+  const [porticos, setPorticos] = useState<Catalogo[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetchCatalogos();
+  }, []);
+
+  const fetchCatalogos = async () => {
+    try {
+      const [tramosRes, sentidosRes, pksRes, sheltersRes, porticosRes] = await Promise.all([
+        supabase.from("catalogo_tramos").select("*").eq("activo", true),
+        supabase.from("catalogo_sentidos").select("*").eq("activo", true),
+        supabase.from("catalogo_pks").select("*").eq("activo", true),
+        supabase.from("catalogo_shelters").select("*").eq("activo", true),
+        supabase.from("catalogo_porticos").select("*").eq("activo", true),
+      ]);
+
+      if (tramosRes.data) setTramos(tramosRes.data);
+      if (sentidosRes.data) setSentidos(sentidosRes.data);
+      if (pksRes.data) setPks(pksRes.data);
+      if (sheltersRes.data) setShelters(sheltersRes.data);
+      if (porticosRes.data) setPorticos(porticosRes.data);
+    } catch (error: any) {
+      toast.error("Error al cargar catálogos");
+    }
+  };
+
+  const findCatalogoId = (nombre: string, catalogos: Catalogo[], tipo: string): string | null => {
+    const found = catalogos.find(c => 
+      (c.nombre && c.nombre.toLowerCase() === nombre.toLowerCase()) ||
+      (c.pk && c.pk.toLowerCase() === nombre.toLowerCase())
+    );
+    return found ? found.id : null;
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -61,34 +115,113 @@ const BulkUpload = ({ onClose }: BulkUploadProps) => {
     const validRows: EquipmentRow[] = [];
 
     const validTypes = ['electrico', 'mecanico', 'electronico', 'medicion', 'otros'];
-    const validStates = ['operativo', 'en_reparacion', 'en_mantenimiento', 'fuera_de_servicio', 'obsoleto', 'dado_de_baja'];
 
     data.forEach((row, index) => {
+      const rowNum = index + 1;
+
+      // Validar campos obligatorios
       if (!row.nombre_equipo?.trim()) {
-        validationErrors.push(`Fila ${index + 1}: Falta nombre del equipo`);
+        validationErrors.push(`Fila ${rowNum}: Falta nombre del equipo`);
         return;
       }
 
       if (!row.tipo || !validTypes.includes(row.tipo.toLowerCase())) {
-        validationErrors.push(`Fila ${index + 1}: Tipo inválido. Debe ser: ${validTypes.join(', ')}`);
+        validationErrors.push(`Fila ${rowNum}: Tipo inválido. Debe ser: ${validTypes.join(', ')}`);
         return;
       }
 
-      const estado = row.estado?.toLowerCase() || 'operativo';
-      if (!validStates.includes(estado)) {
-        validationErrors.push(`Fila ${index + 1}: Estado inválido`);
+      if (!row.marca?.trim()) {
+        validationErrors.push(`Fila ${rowNum}: Falta marca`);
+        return;
+      }
+
+      if (!row.modelo?.trim()) {
+        validationErrors.push(`Fila ${rowNum}: Falta modelo`);
+        return;
+      }
+
+      if (!row.version_revision?.trim()) {
+        validationErrors.push(`Fila ${rowNum}: Falta versión/revisión`);
+        return;
+      }
+
+      if (!row.nro_serie?.trim()) {
+        validationErrors.push(`Fila ${rowNum}: Falta número de serie`);
+        return;
+      }
+
+      if (!row.anio_fabricacion || isNaN(Number(row.anio_fabricacion))) {
+        validationErrors.push(`Fila ${rowNum}: Año de fabricación inválido`);
+        return;
+      }
+
+      if (!row.ubicacion_fisica?.trim()) {
+        validationErrors.push(`Fila ${rowNum}: Falta ubicación física`);
+        return;
+      }
+
+      if (!row.zona?.trim()) {
+        validationErrors.push(`Fila ${rowNum}: Falta zona`);
+        return;
+      }
+
+      if (!row.sala?.trim()) {
+        validationErrors.push(`Fila ${rowNum}: Falta sala`);
+        return;
+      }
+
+      // Validar y convertir referencias de catálogos
+      const tramo_id = findCatalogoId(row.tramo, tramos, 'tramo');
+      if (!tramo_id) {
+        validationErrors.push(`Fila ${rowNum}: Tramo "${row.tramo}" no encontrado en catálogo`);
+        return;
+      }
+
+      const sentido_id = findCatalogoId(row.sentido, sentidos, 'sentido');
+      if (!sentido_id) {
+        validationErrors.push(`Fila ${rowNum}: Sentido "${row.sentido}" no encontrado en catálogo`);
+        return;
+      }
+
+      const pk_id = findCatalogoId(row.pk, pks, 'pk');
+      if (!pk_id) {
+        validationErrors.push(`Fila ${rowNum}: PK "${row.pk}" no encontrado en catálogo`);
+        return;
+      }
+
+      const shelter_id = findCatalogoId(row.shelter, shelters, 'shelter');
+      if (!shelter_id) {
+        validationErrors.push(`Fila ${rowNum}: Shelter "${row.shelter}" no encontrado en catálogo`);
+        return;
+      }
+
+      const portico_id = findCatalogoId(row.portico, porticos, 'pórtico');
+      if (!portico_id) {
+        validationErrors.push(`Fila ${rowNum}: Pórtico "${row.portico}" no encontrado en catálogo`);
         return;
       }
 
       validRows.push({
         nombre_equipo: row.nombre_equipo.trim(),
         tipo: row.tipo.toLowerCase() as TipoEquipo,
-        marca: row.marca?.trim(),
-        modelo: row.modelo?.trim(),
-        nro_serie: row.nro_serie?.trim(),
-        estado: estado as EstadoEquipo,
-        ubicacion_fisica: row.ubicacion_fisica?.trim(),
-        responsable_asignado: row.responsable_asignado?.trim()
+        marca: row.marca.trim(),
+        modelo: row.modelo.trim(),
+        version_revision: row.version_revision.trim(),
+        nro_serie: row.nro_serie.trim(),
+        anio_fabricacion: Number(row.anio_fabricacion),
+        ubicacion_fisica: row.ubicacion_fisica.trim(),
+        zona: row.zona.trim(),
+        sala: row.sala.trim(),
+        tramo_id,
+        sentido_id,
+        pk_id,
+        shelter_id,
+        portico_id,
+        vida_util_estimada: row.vida_util_estimada ? Number(row.vida_util_estimada) : undefined,
+        proximo_mantenimiento: row.proximo_mantenimiento?.trim() || undefined,
+        responsable_asignado: row.responsable_asignado?.trim() || undefined,
+        proveedor_asociado: row.proveedor_asociado?.trim() || undefined,
+        observaciones: row.observaciones?.trim() || undefined,
       });
     });
 
@@ -131,13 +264,14 @@ const BulkUpload = ({ onClose }: BulkUploadProps) => {
         <Info className="h-4 w-4" />
         <AlertDescription>
           <strong>Formato requerido del archivo CSV:</strong>
-          <div className="mt-2 text-sm font-mono bg-muted p-2 rounded">
-            nombre_equipo, tipo, marca, modelo, nro_serie, estado, ubicacion_fisica, responsable_asignado
+          <div className="mt-2 text-sm font-mono bg-muted p-2 rounded overflow-x-auto">
+            nombre_equipo,tipo,marca,modelo,version_revision,nro_serie,anio_fabricacion,ubicacion_fisica,zona,sala,tramo,sentido,pk,shelter,portico,vida_util_estimada,proximo_mantenimiento,responsable_asignado,proveedor_asociado,observaciones
           </div>
-          <div className="mt-2 space-y-1 text-sm">
+          <div className="mt-3 space-y-1 text-sm">
             <p><strong>Tipos válidos:</strong> electrico, mecanico, electronico, medicion, otros</p>
-            <p><strong>Estados válidos:</strong> operativo, en_reparacion, en_mantenimiento, fuera_de_servicio, obsoleto, dado_de_baja</p>
-            <p><strong>Campos obligatorios:</strong> nombre_equipo, tipo</p>
+            <p><strong>Campos obligatorios:</strong> nombre_equipo, tipo, marca, modelo, version_revision, nro_serie, anio_fabricacion, ubicacion_fisica, zona, sala, tramo, sentido, pk, shelter, portico</p>
+            <p><strong>Campos opcionales:</strong> vida_util_estimada, proximo_mantenimiento, responsable_asignado, proveedor_asociado, observaciones</p>
+            <p className="text-muted-foreground"><strong>Nota:</strong> Los campos fecha_ingreso, estado, id, created_at, updated_at se asignan automáticamente por el sistema.</p>
           </div>
         </AlertDescription>
       </Alert>
@@ -172,13 +306,10 @@ const BulkUpload = ({ onClose }: BulkUploadProps) => {
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             <strong>Errores de validación encontrados:</strong>
-            <ul className="mt-2 space-y-1">
-              {errors.slice(0, 10).map((error, index) => (
+            <ul className="mt-2 space-y-1 max-h-60 overflow-y-auto">
+              {errors.map((error, index) => (
                 <li key={index} className="text-sm">• {error}</li>
               ))}
-              {errors.length > 10 && (
-                <li className="text-sm">• ...y {errors.length - 10} errores más</li>
-              )}
             </ul>
           </AlertDescription>
         </Alert>
@@ -204,9 +335,11 @@ const BulkUpload = ({ onClose }: BulkUploadProps) => {
                       <TableHead>Tipo</TableHead>
                       <TableHead>Marca</TableHead>
                       <TableHead>Modelo</TableHead>
-                      <TableHead>Estado</TableHead>
+                      <TableHead>N° Serie</TableHead>
+                      <TableHead>Año Fab.</TableHead>
                       <TableHead>Ubicación</TableHead>
-                      <TableHead>Responsable</TableHead>
+                      <TableHead>Zona</TableHead>
+                      <TableHead>Sala</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -214,13 +347,13 @@ const BulkUpload = ({ onClose }: BulkUploadProps) => {
                       <TableRow key={index}>
                         <TableCell className="font-medium">{row.nombre_equipo}</TableCell>
                         <TableCell className="capitalize">{row.tipo}</TableCell>
-                        <TableCell>{row.marca || "-"}</TableCell>
-                        <TableCell>{row.modelo || "-"}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{row.estado}</Badge>
-                        </TableCell>
-                        <TableCell>{row.ubicacion_fisica || "-"}</TableCell>
-                        <TableCell>{row.responsable_asignado || "-"}</TableCell>
+                        <TableCell>{row.marca}</TableCell>
+                        <TableCell>{row.modelo}</TableCell>
+                        <TableCell>{row.nro_serie}</TableCell>
+                        <TableCell>{row.anio_fabricacion}</TableCell>
+                        <TableCell>{row.ubicacion_fisica}</TableCell>
+                        <TableCell>{row.zona}</TableCell>
+                        <TableCell>{row.sala}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
