@@ -451,6 +451,89 @@ export type Database = {
           },
         ]
       }
+      ordenes_trabajo: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          criticidad: string | null
+          descripcion_trabajo: string | null
+          estado: string | null
+          fecha_fin: string | null
+          fecha_inicio: string | null
+          fecha_programada: string
+          frecuencia: string
+          id: string
+          id_plan_linea: string | null
+          nombre_sitio: string
+          observaciones: string | null
+          pk: string
+          proveedor_codigo: string | null
+          proveedor_nombre: string | null
+          tecnico_asignado: string | null
+          tipo_equipo: string
+          tipo_mantenimiento: string
+          tramo: string
+          updated_at: string | null
+          ventana_horaria: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          criticidad?: string | null
+          descripcion_trabajo?: string | null
+          estado?: string | null
+          fecha_fin?: string | null
+          fecha_inicio?: string | null
+          fecha_programada: string
+          frecuencia: string
+          id?: string
+          id_plan_linea?: string | null
+          nombre_sitio: string
+          observaciones?: string | null
+          pk: string
+          proveedor_codigo?: string | null
+          proveedor_nombre?: string | null
+          tecnico_asignado?: string | null
+          tipo_equipo: string
+          tipo_mantenimiento: string
+          tramo: string
+          updated_at?: string | null
+          ventana_horaria?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          criticidad?: string | null
+          descripcion_trabajo?: string | null
+          estado?: string | null
+          fecha_fin?: string | null
+          fecha_inicio?: string | null
+          fecha_programada?: string
+          frecuencia?: string
+          id?: string
+          id_plan_linea?: string | null
+          nombre_sitio?: string
+          observaciones?: string | null
+          pk?: string
+          proveedor_codigo?: string | null
+          proveedor_nombre?: string | null
+          tecnico_asignado?: string | null
+          tipo_equipo?: string
+          tipo_mantenimiento?: string
+          tramo?: string
+          updated_at?: string | null
+          ventana_horaria?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ordenes_trabajo_id_plan_linea_fkey"
+            columns: ["id_plan_linea"]
+            isOneToOne: false
+            referencedRelation: "plan_anual_lineas"
+            referencedColumns: ["id_plan_linea"]
+          },
+        ]
+      }
       personal: {
         Row: {
           cargo: string | null
@@ -554,6 +637,108 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      plan_anual_lineas: {
+        Row: {
+          anio: number
+          created_at: string | null
+          criticidad: string | null
+          descripcion_trabajo: string | null
+          estado_plan: string | null
+          fecha_carga: string | null
+          fecha_programada: string
+          frecuencia: string
+          id_plan_linea: string
+          mes: number
+          nombre_sitio: string
+          origen_archivo: string | null
+          pk: string
+          proveedor_codigo: string | null
+          proveedor_nombre: string | null
+          tipo_equipo: string
+          tipo_mantenimiento: string
+          tramo: string
+          updated_at: string | null
+          usuario_carga: string | null
+          ventana_horaria: string | null
+        }
+        Insert: {
+          anio: number
+          created_at?: string | null
+          criticidad?: string | null
+          descripcion_trabajo?: string | null
+          estado_plan?: string | null
+          fecha_carga?: string | null
+          fecha_programada: string
+          frecuencia: string
+          id_plan_linea?: string
+          mes: number
+          nombre_sitio: string
+          origen_archivo?: string | null
+          pk: string
+          proveedor_codigo?: string | null
+          proveedor_nombre?: string | null
+          tipo_equipo: string
+          tipo_mantenimiento: string
+          tramo: string
+          updated_at?: string | null
+          usuario_carga?: string | null
+          ventana_horaria?: string | null
+        }
+        Update: {
+          anio?: number
+          created_at?: string | null
+          criticidad?: string | null
+          descripcion_trabajo?: string | null
+          estado_plan?: string | null
+          fecha_carga?: string | null
+          fecha_programada?: string
+          frecuencia?: string
+          id_plan_linea?: string
+          mes?: number
+          nombre_sitio?: string
+          origen_archivo?: string | null
+          pk?: string
+          proveedor_codigo?: string | null
+          proveedor_nombre?: string | null
+          tipo_equipo?: string
+          tipo_mantenimiento?: string
+          tramo?: string
+          updated_at?: string | null
+          usuario_carga?: string | null
+          ventana_horaria?: string | null
+        }
+        Relationships: []
+      }
+      plan_anual_logs: {
+        Row: {
+          detalles_errores: Json | null
+          fecha_hora: string | null
+          id: string
+          nombre_archivo: string
+          total_filas_error: number
+          total_filas_validas: number
+          usuario: string | null
+        }
+        Insert: {
+          detalles_errores?: Json | null
+          fecha_hora?: string | null
+          id?: string
+          nombre_archivo: string
+          total_filas_error: number
+          total_filas_validas: number
+          usuario?: string | null
+        }
+        Update: {
+          detalles_errores?: Json | null
+          fecha_hora?: string | null
+          id?: string
+          nombre_archivo?: string
+          total_filas_error?: number
+          total_filas_validas?: number
+          usuario?: string | null
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
