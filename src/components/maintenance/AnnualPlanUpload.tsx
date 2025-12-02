@@ -228,13 +228,24 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
     setIsUploading(true);
     
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      // ============================================
+      // TEMPORAL: Validación de usuario desactivada
+      // Para revertir, descomentar el bloque siguiente
+      // ============================================
+      // const { data: { user } } = await supabase.auth.getUser();
+      // if (!user) {
+      //   toast.error("Usuario no autenticado");
+      //   setIsUploading(false);
+      //   return;
+      // }
+      // const userId = user.id;
+      // const userEmail = user.email;
+      // ============================================
       
-      if (!user) {
-        toast.error("Usuario no autenticado");
-        setIsUploading(false);
-        return;
-      }
+      // TEMPORAL: Usuario por defecto (null para campos UUID)
+      const userId = null;
+      const userEmail = 'test@temporal.com';
+      // ============================================
 
       // Insertar líneas del plan anual
       const planLineas = records.map(record => ({
@@ -253,7 +264,7 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
         ventana_horaria: record.ventana_horaria || null,
         descripcion_trabajo: record.descripcion_trabajo || null,
         estado_plan: 'Planificado',
-        usuario_carga: user.id,
+        usuario_carga: userId,
         origen_archivo: fileName
       }));
 
@@ -281,7 +292,7 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
           ventana_horaria: linea.ventana_horaria,
           descripcion_trabajo: linea.descripcion_trabajo,
           estado: 'Planificada',
-          created_by: user.id
+          created_by: userId  // TEMPORAL: usando userId (null)
         }));
 
         const { error: otError } = await supabase
@@ -293,7 +304,7 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
 
       // Registrar log
       await supabase.from('plan_anual_logs').insert({
-        usuario: user.id,
+        usuario: userId,  // TEMPORAL: usando userId (null)
         nombre_archivo: fileName,
         total_filas_validas: records.length,
         total_filas_error: errors.length,
@@ -303,7 +314,7 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
       const uploadInfo = {
         recordCount: records.length,
         date: new Date().toLocaleDateString('es-ES'),
-        user: user.email || 'Usuario'
+        user: userEmail  // TEMPORAL: usando userEmail
       };
       
       localStorage.setItem('lastAnnualPlanUpload', JSON.stringify(uploadInfo));
