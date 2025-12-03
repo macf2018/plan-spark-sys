@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,82 +12,190 @@ import {
 import { Header } from "@/components/layout/Header";
 import { WorkOrderCard } from "@/components/execution/WorkOrderCard";
 import { WorkOrderDetail } from "@/components/execution/WorkOrderDetail";
-import { Search, Filter, ArrowUpDown, Bell } from "lucide-react";
+import { Search, Filter, ArrowUpDown, Bell, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
-const mockOrders = [
-  {
-    id: "OT-2024-001",
-    planName: "Mantenimiento Preventivo Q1",
-    equipment: "Transformador Principal #1",
-    technician: "Carlos Rodríguez",
-    scheduledDate: "2024-01-15",
-    status: "in_progress" as const,
-    priority: "high" as const,
-    progress: 65,
-  },
-  {
-    id: "OT-2024-002",
-    planName: "Inspección UPS",
-    equipment: "UPS-01",
-    technician: "Ana García",
-    scheduledDate: "2024-01-15",
-    status: "pending" as const,
-    priority: "medium" as const,
-    progress: 0,
-  },
-  {
-    id: "OT-2024-003",
-    planName: "Mantenimiento Correctivo",
-    equipment: "Generador A",
-    technician: "Pedro Martínez",
-    scheduledDate: "2024-01-14",
-    status: "delayed" as const,
-    priority: "critical" as const,
-    progress: 30,
-  },
-  {
-    id: "OT-2024-004",
-    planName: "Revisión Panel Principal",
-    equipment: "Panel Eléctrico Principal",
-    technician: "Carlos Rodríguez",
-    scheduledDate: "2024-01-16",
-    status: "pending" as const,
-    priority: "low" as const,
-    progress: 0,
-  },
-];
+// Tipo para las órdenes de trabajo desde la BD
+interface OrdenTrabajo {
+  id: string;
+  fecha_programada: string;
+  nombre_sitio: string;
+  tramo: string;
+  pk: string;
+  tipo_equipo: string;
+  tipo_mantenimiento: string;
+  frecuencia: string;
+  proveedor_codigo: string | null;
+  proveedor_nombre: string | null;
+  criticidad: string | null;
+  ventana_horaria: string | null;
+  descripcion_trabajo: string | null;
+  estado: string | null;
+  tecnico_asignado: string | null;
+  fecha_inicio: string | null;
+  fecha_fin: string | null;
+  observaciones: string | null;
+}
+
+// Mapeo de estados de BD a estados de UI
+const mapEstadoToStatus = (estado: string | null): "pending" | "in_progress" | "completed" | "delayed" => {
+  switch (estado?.toLowerCase()) {
+    case "en ejecución":
+    case "en_ejecucion":
+    case "en progreso":
+      return "in_progress";
+    case "completada":
+    case "cerrada":
+    case "finalizada":
+      return "completed";
+    case "retrasada":
+    case "vencida":
+      return "delayed";
+    case "planificada":
+    case "pendiente":
+    default:
+      return "pending";
+  }
+};
+
+// Mapeo de criticidad a prioridad
+const mapCriticidadToPriority = (criticidad: string | null): "low" | "medium" | "high" | "critical" => {
+  switch (criticidad?.toLowerCase()) {
+    case "crítica":
+    case "critica":
+    case "muy alta":
+      return "critical";
+    case "alta":
+      return "high";
+    case "media":
+      return "medium";
+    case "baja":
+    default:
+      return "low";
+  }
+};
 
 export default function Execution() {
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [filterTramo, setFilterTramo] = useState("all");
+  const [filterProveedor, setFilterProveedor] = useState("all");
+  const [ordenes, setOrdenes] = useState<OrdenTrabajo[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleStartOrder = (orderId: string) => {
-    toast.success("Orden iniciada", {
-      description: `La orden ${orderId} ha sido iniciada exitosamente`,
-    });
-    setSelectedOrder(orderId);
+  // Cargar órdenes de trabajo desde Supabase
+  useEffect(() => {
+    const fetchOrdenes = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from("ordenes_trabajo")
+          .select("*")
+          .order("fecha_programada", { ascending: true });
+
+        if (error) {
+          console.error("Error al cargar órdenes:", error);
+          toast.error("Error al cargar órdenes de trabajo");
+        } else {
+          setOrdenes(data || []);
+        }
+      } catch (err) {
+        console.error("Error:", err);
+        toast.error("Error de conexión");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrdenes();
+  }, []);
+
+  // Obtener listas únicas para filtros
+  const tramosUnicos = [...new Set(ordenes.map(o => o.tramo).filter(Boolean))];
+  const proveedoresUnicos = [...new Set(ordenes.map(o => o.proveedor_nombre).filter(Boolean))];
+
+  // Transformar órdenes al formato esperado por WorkOrderCard
+  const transformedOrders = ordenes.map(orden => ({
+    id: orden.id,
+    planName: `${orden.tipo_mantenimiento} - ${orden.nombre_sitio}`,
+    equipment: orden.tipo_equipo,
+    technician: orden.tecnico_asignado || "Sin asignar",
+    scheduledDate: orden.fecha_programada,
+    status: mapEstadoToStatus(orden.estado),
+    priority: mapCriticidadToPriority(orden.criticidad),
+    progress: orden.estado?.toLowerCase() === "en ejecución" ? 50 : 
+              orden.estado?.toLowerCase() === "completada" ? 100 : 0,
+    // Campos adicionales para el detalle
+    tramo: orden.tramo,
+    pk: orden.pk,
+    proveedor_nombre: orden.proveedor_nombre,
+    frecuencia: orden.frecuencia,
+    descripcion_trabajo: orden.descripcion_trabajo,
+    ventana_horaria: orden.ventana_horaria,
+  }));
+
+  const handleStartOrder = async (orderId: string) => {
+    try {
+      const { error } = await supabase
+        .from("ordenes_trabajo")
+        .update({ 
+          estado: "En ejecución",
+          fecha_inicio: new Date().toISOString()
+        })
+        .eq("id", orderId);
+
+      if (error) {
+        toast.error("Error al iniciar la orden");
+        return;
+      }
+
+      toast.success("Orden iniciada", {
+        description: `La orden ha sido iniciada exitosamente`,
+      });
+      
+      // Actualizar estado local
+      setOrdenes(prev => prev.map(o => 
+        o.id === orderId 
+          ? { ...o, estado: "En ejecución", fecha_inicio: new Date().toISOString() }
+          : o
+      ));
+      
+      setSelectedOrder(orderId);
+    } catch (err) {
+      toast.error("Error al iniciar la orden");
+    }
   };
 
   const handleViewDetails = (orderId: string) => {
     setSelectedOrder(orderId);
   };
 
-  const filteredOrders = mockOrders.filter((order) => {
+  // Filtrar órdenes
+  const filteredOrders = transformedOrders.filter((order) => {
     const matchesSearch =
       order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.planName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.equipment.toLowerCase().includes(searchTerm.toLowerCase());
+      order.equipment.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (order.tramo?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (order.pk?.toLowerCase() || "").includes(searchTerm.toLowerCase());
 
     const matchesStatus = filterStatus === "all" || order.status === filterStatus;
+    
+    const originalOrder = ordenes.find(o => o.id === order.id);
+    const matchesTramo = filterTramo === "all" || originalOrder?.tramo === filterTramo;
+    const matchesProveedor = filterProveedor === "all" || originalOrder?.proveedor_nombre === filterProveedor;
 
-    return matchesSearch && matchesStatus;
+    return matchesSearch && matchesStatus && matchesTramo && matchesProveedor;
   });
 
-  const delayedOrders = mockOrders.filter(o => o.status === "delayed").length;
-  const activeOrders = mockOrders.filter(o => o.status === "in_progress").length;
+  // Contadores
+  const totalOrders = ordenes.length;
+  const delayedOrders = transformedOrders.filter(o => o.status === "delayed").length;
+  const activeOrders = transformedOrders.filter(o => o.status === "in_progress").length;
+  const pendingOrders = transformedOrders.filter(o => o.status === "pending").length;
 
   if (selectedOrder) {
     return (
@@ -135,8 +243,8 @@ export default function Execution() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{mockOrders.length}</div>
-              <p className="text-xs text-muted-foreground mt-1">Hoy</p>
+              <div className="text-2xl font-bold">{totalOrders}</div>
+              <p className="text-xs text-muted-foreground mt-1">En el sistema</p>
             </CardContent>
           </Card>
 
@@ -159,9 +267,7 @@ export default function Execution() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {mockOrders.filter(o => o.status === "pending").length}
-              </div>
+              <div className="text-2xl font-bold">{pendingOrders}</div>
               <p className="text-xs text-muted-foreground mt-1">Por iniciar</p>
             </CardContent>
           </Card>
@@ -181,9 +287,9 @@ export default function Execution() {
 
         <Card className="shadow-notion">
           <CardHeader>
-            <div className="flex items-center justify-between gap-4">
-              <CardTitle>Órdenes de Trabajo</CardTitle>
-              <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-4">
+              <CardTitle>Órdenes de Trabajo ({filteredOrders.length} de {totalOrders})</CardTitle>
+              <div className="flex flex-wrap items-center gap-2">
                 <div className="relative w-64">
                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -197,7 +303,7 @@ export default function Execution() {
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
                   <SelectTrigger className="w-40">
                     <Filter className="mr-2 h-4 w-4" />
-                    <SelectValue />
+                    <SelectValue placeholder="Estado" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todas</SelectItem>
@@ -205,6 +311,30 @@ export default function Execution() {
                     <SelectItem value="in_progress">En Progreso</SelectItem>
                     <SelectItem value="delayed">Retrasadas</SelectItem>
                     <SelectItem value="completed">Completadas</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={filterTramo} onValueChange={setFilterTramo}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="Tramo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los tramos</SelectItem>
+                    {tramosUnicos.map(tramo => (
+                      <SelectItem key={tramo} value={tramo}>{tramo}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={filterProveedor} onValueChange={setFilterProveedor}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Proveedor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los proveedores</SelectItem>
+                    {proveedoresUnicos.map(prov => (
+                      <SelectItem key={prov} value={prov!}>{prov}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
 
@@ -216,12 +346,19 @@ export default function Execution() {
           </CardHeader>
 
           <CardContent>
-            {filteredOrders.length === 0 ? (
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+                <p className="text-muted-foreground">Cargando órdenes de trabajo...</p>
+              </div>
+            ) : filteredOrders.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Search className="h-12 w-12 text-muted-foreground mb-4" />
                 <p className="text-lg font-medium">No se encontraron órdenes</p>
                 <p className="text-sm text-muted-foreground">
-                  Intenta con diferentes filtros o términos de búsqueda
+                  {totalOrders === 0 
+                    ? "No hay órdenes de trabajo en el sistema. Cargue un plan anual para generar OT."
+                    : "Intenta con diferentes filtros o términos de búsqueda"}
                 </p>
               </div>
             ) : (
