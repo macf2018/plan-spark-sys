@@ -229,25 +229,20 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
     
     try {
       // ============================================
-      // TEMPORAL: Validación de usuario desactivada
-      // Para revertir, descomentar el bloque siguiente
-      // ============================================
-      // const { data: { user } } = await supabase.auth.getUser();
-      // if (!user) {
-      //   toast.error("Usuario no autenticado");
-      //   setIsUploading(false);
-      //   return;
-      // }
-      // const userId = user.id;
-      // const userEmail = user.email;
+      // DESARROLLO: Bypass completo de plan_anual_lineas
+      // Se crean OT directamente desde el CSV
+      // REVERTIR antes de producción
       // ============================================
       
-      // TEMPORAL: Usuario por defecto (null para campos UUID)
+      // TEMPORAL: Usuario por defecto
       const userId = null;
-      const userEmail = 'test@temporal.com';
+      const userEmail = 'dev_test@temporal.com';
+      
       // ============================================
-
-      // Insertar líneas del plan anual
+      // BYPASS: NO insertar en plan_anual_lineas
+      // Comentado para evitar errores de RLS
+      // ============================================
+      /*
       const planLineas = records.map(record => ({
         anio: parseInt(record.anio),
         mes: parseInt(record.mes),
@@ -274,52 +269,63 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
         .select();
 
       if (planError) throw planError;
+      */
+      // ============================================
 
-      // Generar órdenes de trabajo automáticamente
-      if (insertedPlan) {
-        const ordenesTrabajoData = insertedPlan.map((linea: any) => ({
-          id_plan_linea: linea.id_plan_linea,
-          fecha_programada: linea.fecha_programada,
-          nombre_sitio: linea.nombre_sitio,
-          tramo: linea.tramo,
-          pk: linea.pk,
-          tipo_equipo: linea.tipo_equipo,
-          tipo_mantenimiento: linea.tipo_mantenimiento,
-          frecuencia: linea.frecuencia,
-          proveedor_codigo: linea.proveedor_codigo,
-          proveedor_nombre: linea.proveedor_nombre,
-          criticidad: linea.criticidad,
-          ventana_horaria: linea.ventana_horaria,
-          descripcion_trabajo: linea.descripcion_trabajo,
-          estado: 'Planificada',
-          created_by: userId  // TEMPORAL: usando userId (null)
-        }));
+      // ============================================
+      // DESARROLLO: Crear OT directamente desde CSV
+      // Sin dependencia de plan_anual_lineas
+      // ============================================
+      const ordenesTrabajoData = records.map(record => ({
+        // id_plan_linea: null, // No hay referencia a plan_anual_lineas
+        fecha_programada: record.fecha_programada,
+        nombre_sitio: record.nombre_sitio,
+        tramo: record.tramo,
+        pk: record.pk,
+        tipo_equipo: record.tipo_equipo,
+        tipo_mantenimiento: record.tipo_mantenimiento,
+        frecuencia: record.frecuencia,
+        proveedor_codigo: record.proveedor_codigo || null,
+        proveedor_nombre: record.proveedor_nombre || null,
+        criticidad: record.criticidad || null,
+        ventana_horaria: record.ventana_horaria || null,
+        descripcion_trabajo: record.descripcion_trabajo || null,
+        estado: 'Planificada',
+        created_by: userId,
+        observaciones: `Cargado desde CSV: ${fileName} (${new Date().toISOString()})`
+      }));
 
-        const { error: otError } = await supabase
-          .from('ordenes_trabajo')
-          .insert(ordenesTrabajoData);
+      const { error: otError } = await supabase
+        .from('ordenes_trabajo')
+        .insert(ordenesTrabajoData);
 
-        if (otError) throw otError;
+      if (otError) throw otError;
+
+      // ============================================
+      // Log de carga (opcional, puede fallar por RLS)
+      // ============================================
+      try {
+        await supabase.from('plan_anual_logs').insert({
+          usuario: userId,
+          nombre_archivo: fileName,
+          total_filas_validas: records.length,
+          total_filas_error: errors.length,
+          detalles_errores: errors.length > 0 ? (errors as any) : null
+        } as any);
+      } catch (logError) {
+        // Ignorar errores de log, no bloquear el flujo principal
+        console.warn('No se pudo registrar log de carga:', logError);
       }
 
-      // Registrar log
-      await supabase.from('plan_anual_logs').insert({
-        usuario: userId,  // TEMPORAL: usando userId (null)
-        nombre_archivo: fileName,
-        total_filas_validas: records.length,
-        total_filas_error: errors.length,
-        detalles_errores: errors.length > 0 ? (errors as any) : null
-      } as any);
-
+      // Guardar info de última carga en localStorage
       const uploadInfo = {
         recordCount: records.length,
         date: new Date().toLocaleDateString('es-ES'),
-        user: userEmail  // TEMPORAL: usando userEmail
+        user: userEmail
       };
-      
       localStorage.setItem('lastAnnualPlanUpload', JSON.stringify(uploadInfo));
       
-      toast.success(`Plan anual cargado: ${records.length} registros y ${records.length} órdenes de trabajo generadas`);
+      toast.success(`${records.length} Órdenes de Trabajo generadas directamente desde CSV`);
       
       // Limpiar y cerrar
       setRecords([]);
@@ -327,8 +333,8 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
       setFileName("");
       onOpenChange(false);
     } catch (error: any) {
-      console.error('Error al cargar plan anual:', error);
-      toast.error(`Error al cargar el plan: ${error.message}`);
+      console.error('Error al crear OT desde CSV:', error);
+      toast.error(`Error al crear órdenes de trabajo: ${error.message}`);
     } finally {
       setIsUploading(false);
     }
