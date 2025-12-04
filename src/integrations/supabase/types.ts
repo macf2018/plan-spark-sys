@@ -713,8 +713,11 @@ export type Database = {
       plan_anual_logs: {
         Row: {
           detalles_errores: Json | null
+          duracion_carga_ms: number | null
           fecha_hora: string | null
           id: string
+          id_carga: string | null
+          ip_carga: string | null
           nombre_archivo: string
           total_filas_error: number
           total_filas_validas: number
@@ -722,8 +725,11 @@ export type Database = {
         }
         Insert: {
           detalles_errores?: Json | null
+          duracion_carga_ms?: number | null
           fecha_hora?: string | null
           id?: string
+          id_carga?: string | null
+          ip_carga?: string | null
           nombre_archivo: string
           total_filas_error: number
           total_filas_validas: number
@@ -731,8 +737,11 @@ export type Database = {
         }
         Update: {
           detalles_errores?: Json | null
+          duracion_carga_ms?: number | null
           fecha_hora?: string | null
           id?: string
+          id_carga?: string | null
+          ip_carga?: string | null
           nombre_archivo?: string
           total_filas_error?: number
           total_filas_validas?: number
