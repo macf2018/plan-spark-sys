@@ -46,6 +46,7 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState<string>("");
+  const [uploadStartTime, setUploadStartTime] = useState<number>(0);
 
   const REQUIRED_COLUMNS = [
     'anio', 'mes', 'fecha_programada', 'nombre_sitio', 'tramo', 'pk',
@@ -61,7 +62,6 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
   const validateRecord = (record: any, rowNumber: number): ValidationError[] => {
     const rowErrors: ValidationError[] = [];
 
-    // Validar campos obligatorios
     REQUIRED_FIELDS.forEach(field => {
       if (!record[field] || record[field].toString().trim() === '') {
         rowErrors.push({
@@ -73,7 +73,6 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
       }
     });
 
-    // Validar año
     const anio = parseInt(record.anio);
     if (record.anio && (isNaN(anio) || anio < 2020 || anio > 2050)) {
       rowErrors.push({
@@ -84,7 +83,6 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
       });
     }
 
-    // Validar mes
     const mes = parseInt(record.mes);
     if (record.mes && (isNaN(mes) || mes < 1 || mes > 12)) {
       rowErrors.push({
@@ -95,7 +93,6 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
       });
     }
 
-    // Validar fecha_programada
     if (record.fecha_programada) {
       const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
       if (!dateRegex.test(record.fecha_programada)) {
@@ -168,7 +165,6 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
   };
 
   const processUploadedData = (data: any[], fileName: string) => {
-    // Verificar que existen todas las columnas requeridas
     if (data.length === 0) {
       setErrors([{
         row: 0,
@@ -198,7 +194,7 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
     const validRecords: PlanRecord[] = [];
 
     data.forEach((row, index) => {
-      const rowErrors = validateRecord(row, index + 2); // +2 porque la fila 1 es el header
+      const rowErrors = validateRecord(row, index + 2);
       
       if (rowErrors.length > 0) {
         validationErrors.push(...rowErrors);
@@ -219,6 +215,17 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
     }
   };
 
+  // Función para obtener IP del cliente (aproximada)
+  const getClientIP = async (): Promise<string> => {
+    try {
+      const response = await fetch('https://api.ipify.org?format=json');
+      const data = await response.json();
+      return data.ip || 'N/A';
+    } catch {
+      return 'N/A';
+    }
+  };
+
   const handleConfirmUpload = async () => {
     if (records.length === 0) {
       toast.error("No hay registros válidos para cargar");
@@ -226,6 +233,8 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
     }
 
     setIsUploading(true);
+    const startTime = Date.now();
+    setUploadStartTime(startTime);
     
     try {
       // ============================================
@@ -234,50 +243,16 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
       // REVERTIR antes de producción
       // ============================================
       
-      // TEMPORAL: Usuario por defecto
       const userId = null;
       const userEmail = 'dev_test@temporal.com';
       
-      // ============================================
-      // BYPASS: NO insertar en plan_anual_lineas
-      // Comentado para evitar errores de RLS
-      // ============================================
-      /*
-      const planLineas = records.map(record => ({
-        anio: parseInt(record.anio),
-        mes: parseInt(record.mes),
-        fecha_programada: record.fecha_programada,
-        nombre_sitio: record.nombre_sitio,
-        tramo: record.tramo,
-        pk: record.pk,
-        tipo_equipo: record.tipo_equipo,
-        tipo_mantenimiento: record.tipo_mantenimiento,
-        frecuencia: record.frecuencia,
-        proveedor_codigo: record.proveedor_codigo || null,
-        proveedor_nombre: record.proveedor_nombre || null,
-        criticidad: record.criticidad || null,
-        ventana_horaria: record.ventana_horaria || null,
-        descripcion_trabajo: record.descripcion_trabajo || null,
-        estado_plan: 'Planificado',
-        usuario_carga: userId,
-        origen_archivo: fileName
-      }));
-
-      const { data: insertedPlan, error: planError } = await supabase
-        .from('plan_anual_lineas')
-        .insert(planLineas)
-        .select();
-
-      if (planError) throw planError;
-      */
-      // ============================================
+      // Obtener IP del cliente
+      const clientIP = await getClientIP();
 
       // ============================================
       // DESARROLLO: Crear OT directamente desde CSV
-      // Sin dependencia de plan_anual_lineas
       // ============================================
       const ordenesTrabajoData = records.map(record => ({
-        // id_plan_linea: null, // No hay referencia a plan_anual_lineas
         fecha_programada: record.fecha_programada,
         nombre_sitio: record.nombre_sitio,
         tramo: record.tramo,
@@ -301,8 +276,12 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
 
       if (otError) throw otError;
 
+      // Calcular duración
+      const endTime = Date.now();
+      const duration = endTime - startTime;
+
       // ============================================
-      // Log de carga (opcional, puede fallar por RLS)
+      // Log de carga con campos adicionales
       // ============================================
       try {
         await supabase.from('plan_anual_logs').insert({
@@ -310,24 +289,25 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
           nombre_archivo: fileName,
           total_filas_validas: records.length,
           total_filas_error: errors.length,
-          detalles_errores: errors.length > 0 ? (errors as any) : null
+          detalles_errores: errors.length > 0 ? (errors as any) : null,
+          ip_carga: clientIP,
+          duracion_carga_ms: duration
         } as any);
       } catch (logError) {
-        // Ignorar errores de log, no bloquear el flujo principal
         console.warn('No se pudo registrar log de carga:', logError);
       }
 
-      // Guardar info de última carga en localStorage
+      // Guardar info en localStorage
       const uploadInfo = {
         recordCount: records.length,
         date: new Date().toLocaleDateString('es-ES'),
-        user: userEmail
+        user: userEmail,
+        duration: duration
       };
       localStorage.setItem('lastAnnualPlanUpload', JSON.stringify(uploadInfo));
       
-      toast.success(`${records.length} Órdenes de Trabajo generadas directamente desde CSV`);
+      toast.success(`${records.length} Órdenes de Trabajo generadas en ${(duration / 1000).toFixed(2)}s`);
       
-      // Limpiar y cerrar
       setRecords([]);
       setErrors([]);
       setFileName("");
@@ -393,7 +373,6 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Instrucciones */}
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription className="text-sm">
@@ -403,7 +382,6 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
             </AlertDescription>
           </Alert>
 
-          {/* Contadores y botones */}
           <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
             <div className="flex gap-6">
               <div className="flex items-center gap-2">
@@ -449,7 +427,6 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
             </div>
           </div>
 
-          {/* Input de archivo */}
           <input
             ref={fileInputRef}
             type="file"
@@ -460,14 +437,12 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
           <Button 
             onClick={() => fileInputRef.current?.click()}
             disabled={isValidating || isUploading}
-            size="lg"
             className="w-full"
           >
             <FileSpreadsheet className="mr-2 h-5 w-5" />
             {isValidating ? "Validando archivo..." : "Seleccionar archivo CSV"}
           </Button>
 
-          {/* Errores detallados */}
           {errors.length > 0 && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
@@ -487,69 +462,66 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
             </Alert>
           )}
 
-          {/* Tabla de preview */}
           {records.length > 0 && (
             <div className="border rounded-lg">
               <div className="p-3 bg-muted">
-                <span className="font-semibold">Vista Previa de Registros Válidos</span>
+                <span className="font-semibold">Vista Previa de Registros Válidos ({records.length})</span>
               </div>
               
-              <ScrollArea className="h-[350px]">
+              <ScrollArea className="h-[300px]">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-24">Fecha</TableHead>
+                      <TableHead>#</TableHead>
+                      <TableHead>Año</TableHead>
+                      <TableHead>Mes</TableHead>
+                      <TableHead>Fecha Prog.</TableHead>
                       <TableHead>Sitio</TableHead>
-                      <TableHead className="w-20">PK</TableHead>
                       <TableHead>Tramo</TableHead>
-                      <TableHead>Tipo Mant.</TableHead>
+                      <TableHead>PK</TableHead>
+                      <TableHead>Tipo Equipo</TableHead>
+                      <TableHead>Mantenimiento</TableHead>
                       <TableHead>Frecuencia</TableHead>
                       <TableHead>Proveedor</TableHead>
-                      <TableHead className="w-24">Criticidad</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {records.map((record, index) => (
+                    {records.slice(0, 100).map((record, index) => (
                       <TableRow key={index}>
-                        <TableCell className="font-mono text-xs">{record.fecha_programada}</TableCell>
-                        <TableCell className="font-medium">{record.nombre_sitio}</TableCell>
-                        <TableCell>{record.pk}</TableCell>
+                        <TableCell className="text-muted-foreground">{index + 1}</TableCell>
+                        <TableCell>{record.anio}</TableCell>
+                        <TableCell>{record.mes}</TableCell>
+                        <TableCell>{record.fecha_programada}</TableCell>
+                        <TableCell className="max-w-[150px] truncate">{record.nombre_sitio}</TableCell>
                         <TableCell>{record.tramo}</TableCell>
+                        <TableCell>{record.pk}</TableCell>
+                        <TableCell>{record.tipo_equipo}</TableCell>
                         <TableCell>{record.tipo_mantenimiento}</TableCell>
                         <TableCell>{record.frecuencia}</TableCell>
                         <TableCell>{record.proveedor_nombre || '-'}</TableCell>
-                        <TableCell>
-                          {record.criticidad ? (
-                            <Badge variant={
-                              record.criticidad.toLowerCase() === 'alta' ? 'destructive' :
-                              record.criticidad.toLowerCase() === 'media' ? 'default' : 'secondary'
-                            }>
-                              {record.criticidad}
-                            </Badge>
-                          ) : '-'}
-                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
+                {records.length > 100 && (
+                  <div className="p-3 text-center text-muted-foreground text-sm">
+                    Mostrando 100 de {records.length} registros
+                  </div>
+                )}
               </ScrollArea>
             </div>
           )}
         </div>
 
-        <DialogFooter className="gap-2">
-          <Button 
-            variant="outline" 
-            onClick={() => onOpenChange(false)}
-            disabled={isUploading}
-          >
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isUploading}>
             Cancelar
           </Button>
           <Button 
-            onClick={handleConfirmUpload}
-            disabled={records.length === 0 || isValidating || isUploading}
+            onClick={handleConfirmUpload} 
+            disabled={records.length === 0 || isUploading}
           >
-            {isUploading ? "Cargando..." : `Confirmar Carga del Plan (${validCount} registros)`}
+            {isUploading ? "Creando OT..." : `Confirmar Carga (${records.length} registros)`}
           </Button>
         </DialogFooter>
       </DialogContent>
