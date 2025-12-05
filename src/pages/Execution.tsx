@@ -16,6 +16,7 @@ import { Search, Filter, ArrowUpDown, Bell, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { mapEstadoToUIStatus, mapCriticidadToPriority, FILTER_STATES } from "@/lib/orderStatus";
 
 // Tipo para las órdenes de trabajo desde la BD
 interface OrdenTrabajo {
@@ -39,44 +40,6 @@ interface OrdenTrabajo {
   observaciones: string | null;
 }
 
-// Mapeo de estados de BD a estados de UI
-const mapEstadoToStatus = (estado: string | null): "pending" | "in_progress" | "completed" | "delayed" => {
-  switch (estado?.toLowerCase()) {
-    case "en ejecución":
-    case "en_ejecucion":
-    case "en progreso":
-      return "in_progress";
-    case "completada":
-    case "cerrada":
-    case "finalizada":
-      return "completed";
-    case "retrasada":
-    case "vencida":
-      return "delayed";
-    case "planificada":
-    case "pendiente":
-    default:
-      return "pending";
-  }
-};
-
-// Mapeo de criticidad a prioridad
-const mapCriticidadToPriority = (criticidad: string | null): "low" | "medium" | "high" | "critical" => {
-  switch (criticidad?.toLowerCase()) {
-    case "crítica":
-    case "critica":
-    case "muy alta":
-      return "critical";
-    case "alta":
-      return "high";
-    case "media":
-      return "medium";
-    case "baja":
-    default:
-      return "low";
-  }
-};
-
 export default function Execution() {
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -87,29 +50,29 @@ export default function Execution() {
   const [loading, setLoading] = useState(true);
 
   // Cargar órdenes de trabajo desde Supabase
-  useEffect(() => {
-    const fetchOrdenes = async () => {
-      setLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from("ordenes_trabajo")
-          .select("*")
-          .order("fecha_programada", { ascending: true });
+  const fetchOrdenes = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("ordenes_trabajo")
+        .select("*")
+        .order("fecha_programada", { ascending: true });
 
-        if (error) {
-          console.error("Error al cargar órdenes:", error);
-          toast.error("Error al cargar órdenes de trabajo");
-        } else {
-          setOrdenes(data || []);
-        }
-      } catch (err) {
-        console.error("Error:", err);
-        toast.error("Error de conexión");
-      } finally {
-        setLoading(false);
+      if (error) {
+        console.error("Error al cargar órdenes:", error);
+        toast.error("Error al cargar órdenes de trabajo");
+      } else {
+        setOrdenes(data || []);
       }
-    };
+    } catch (err) {
+      console.error("Error:", err);
+      toast.error("Error de conexión");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchOrdenes();
   }, []);
 
@@ -124,7 +87,7 @@ export default function Execution() {
     equipment: orden.tipo_equipo,
     technician: orden.tecnico_asignado || "Sin asignar",
     scheduledDate: orden.fecha_programada,
-    status: mapEstadoToStatus(orden.estado),
+    status: mapEstadoToUIStatus(orden.estado),
     priority: mapCriticidadToPriority(orden.criticidad),
     progress: orden.estado?.toLowerCase() === "en ejecución" ? 50 : 
               orden.estado?.toLowerCase() === "completada" ? 100 : 0,
@@ -139,6 +102,9 @@ export default function Execution() {
 
   const handleStartOrder = async (orderId: string) => {
     try {
+      // Registrar en historial
+      const ordenActual = ordenes.find(o => o.id === orderId);
+      
       const { error } = await supabase
         .from("ordenes_trabajo")
         .update({ 
@@ -151,6 +117,18 @@ export default function Execution() {
         toast.error("Error al iniciar la orden");
         return;
       }
+
+      // Registrar en historial
+      await supabase
+        .from("ordenes_trabajo_historial")
+        .insert({
+          orden_id: orderId,
+          accion: "INICIO",
+          estado_anterior: ordenActual?.estado || "Planificada",
+          estado_nuevo: "En ejecución",
+          descripcion: "Orden iniciada",
+          usuario: "sistema"
+        });
 
       toast.success("Orden iniciada", {
         description: `La orden ha sido iniciada exitosamente`,
@@ -173,7 +151,13 @@ export default function Execution() {
     setSelectedOrder(orderId);
   };
 
-  // Filtrar órdenes
+  const handleCloseDetail = () => {
+    setSelectedOrder(null);
+    // Recargar datos para sincronizar cambios
+    fetchOrdenes();
+  };
+
+  // Filtrar órdenes - usando estados unificados
   const filteredOrders = transformedOrders.filter((order) => {
     const matchesSearch =
       order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -182,7 +166,15 @@ export default function Execution() {
       (order.tramo?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
       (order.pk?.toLowerCase() || "").includes(searchTerm.toLowerCase());
 
-    const matchesStatus = filterStatus === "all" || order.status === filterStatus;
+    // Mapear filtro de estado
+    let matchesStatus = filterStatus === "all";
+    if (!matchesStatus) {
+      const originalOrder = ordenes.find(o => o.id === order.id);
+      const estadoDB = originalOrder?.estado?.toLowerCase() || "planificada";
+      const filterLower = filterStatus.toLowerCase();
+      matchesStatus = estadoDB === filterLower || 
+                      (filterLower === "en ejecución" && estadoDB === "en_ejecucion");
+    }
     
     const originalOrder = ordenes.find(o => o.id === order.id);
     const matchesTramo = filterTramo === "all" || originalOrder?.tramo === filterTramo;
@@ -196,17 +188,19 @@ export default function Execution() {
   const delayedOrders = transformedOrders.filter(o => o.status === "delayed").length;
   const activeOrders = transformedOrders.filter(o => o.status === "in_progress").length;
   const pendingOrders = transformedOrders.filter(o => o.status === "pending").length;
+  const completedOrders = transformedOrders.filter(o => o.status === "completed").length;
 
+  // Vista de detalle - con navegación funcional
   if (selectedOrder) {
     return (
       <div className="flex min-h-screen flex-col">
         <Header title="Ejecución de Orden de Trabajo" showNavigation />
         
         <main className="flex-1 p-6">
-          <Button variant="outline" onClick={() => setSelectedOrder(null)} className="mb-4">
+          <Button variant="outline" onClick={handleCloseDetail} className="mb-4">
             ← Volver a Órdenes
           </Button>
-          <WorkOrderDetail orderId={selectedOrder} onClose={() => setSelectedOrder(null)} />
+          <WorkOrderDetail orderId={selectedOrder} onClose={handleCloseDetail} />
         </main>
       </div>
     );
@@ -235,7 +229,7 @@ export default function Execution() {
           </Alert>
         )}
 
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-5">
           <Card className="shadow-notion">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -251,11 +245,11 @@ export default function Execution() {
           <Card className="shadow-notion">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                En Progreso
+                En Ejecución
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-primary">{activeOrders}</div>
+              <div className="text-2xl font-bold text-green-600">{activeOrders}</div>
               <p className="text-xs text-muted-foreground mt-1">Activas ahora</p>
             </CardContent>
           </Card>
@@ -263,12 +257,24 @@ export default function Execution() {
           <Card className="shadow-notion">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Pendientes
+                Planificadas
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{pendingOrders}</div>
+              <div className="text-2xl font-bold text-blue-600">{pendingOrders}</div>
               <p className="text-xs text-muted-foreground mt-1">Por iniciar</p>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-notion">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Completadas
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-muted-foreground">{completedOrders}</div>
+              <p className="text-xs text-muted-foreground mt-1">Finalizadas</p>
             </CardContent>
           </Card>
 
@@ -301,16 +307,16 @@ export default function Execution() {
                 </div>
 
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger className="w-40">
+                  <SelectTrigger className="w-44">
                     <Filter className="mr-2 h-4 w-4" />
                     <SelectValue placeholder="Estado" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todas</SelectItem>
-                    <SelectItem value="pending">Pendientes</SelectItem>
-                    <SelectItem value="in_progress">En Progreso</SelectItem>
-                    <SelectItem value="delayed">Retrasadas</SelectItem>
-                    <SelectItem value="completed">Completadas</SelectItem>
+                    {FILTER_STATES.map(state => (
+                      <SelectItem key={state.value} value={state.value}>
+                        {state.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
 

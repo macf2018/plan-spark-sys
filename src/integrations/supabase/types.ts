@@ -534,6 +534,53 @@ export type Database = {
           },
         ]
       }
+      ordenes_trabajo_historial: {
+        Row: {
+          accion: string
+          campos_modificados: Json | null
+          created_at: string | null
+          descripcion: string | null
+          estado_anterior: string | null
+          estado_nuevo: string | null
+          fecha_hora: string
+          id: string
+          orden_id: string
+          usuario: string | null
+        }
+        Insert: {
+          accion: string
+          campos_modificados?: Json | null
+          created_at?: string | null
+          descripcion?: string | null
+          estado_anterior?: string | null
+          estado_nuevo?: string | null
+          fecha_hora?: string
+          id?: string
+          orden_id: string
+          usuario?: string | null
+        }
+        Update: {
+          accion?: string
+          campos_modificados?: Json | null
+          created_at?: string | null
+          descripcion?: string | null
+          estado_anterior?: string | null
+          estado_nuevo?: string | null
+          fecha_hora?: string
+          id?: string
+          orden_id?: string
+          usuario?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ordenes_trabajo_historial_orden_id_fkey"
+            columns: ["orden_id"]
+            isOneToOne: false
+            referencedRelation: "ordenes_trabajo"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       personal: {
         Row: {
           cargo: string | null

@@ -40,9 +40,11 @@ export default function Planning() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [totalOrdenes, setTotalOrdenes] = useState(0);
 
   useEffect(() => {
     fetchLastUploadInfo();
+    fetchTotalOrdenes();
   }, [isUploadOpen, refreshKey]);
 
   const fetchLastUploadInfo = async () => {
@@ -52,7 +54,7 @@ export default function Planning() {
         .select('*')
         .order('fecha_hora', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching upload info:', error);
@@ -68,11 +70,27 @@ export default function Planning() {
           total_filas_validas: data.total_filas_validas,
           nombre_archivo: data.nombre_archivo
         });
+      } else {
+        setLastUpload(null);
       }
     } catch (error) {
       console.error('Error:', error);
     } finally {
       setLoadingUploadInfo(false);
+    }
+  };
+
+  const fetchTotalOrdenes = async () => {
+    try {
+      const { count, error } = await supabase
+        .from('ordenes_trabajo')
+        .select('*', { count: 'exact', head: true });
+
+      if (!error && count !== null) {
+        setTotalOrdenes(count);
+      }
+    } catch (error) {
+      console.error('Error fetching total:', error);
     }
   };
 
@@ -116,7 +134,7 @@ export default function Planning() {
       const { error: otError } = await supabase
         .from('ordenes_trabajo')
         .delete()
-        .neq('id', '00000000-0000-0000-0000-000000000000'); // Elimina todos
+        .neq('id', '00000000-0000-0000-0000-000000000000');
 
       if (otError) throw otError;
 
@@ -132,6 +150,7 @@ export default function Planning() {
 
       toast.success('Todas las órdenes de trabajo han sido eliminadas');
       setLastUpload(null);
+      setTotalOrdenes(0);
       setRefreshKey(prev => prev + 1);
       setDeleteDialogOpen(false);
     } catch (error) {
@@ -144,6 +163,11 @@ export default function Planning() {
 
   const handleNewPlan = () => {
     setIsFormOpen(true);
+  };
+
+  const handleRefresh = () => {
+    setRefreshKey(prev => prev + 1);
+    toast.success('Datos actualizados');
   };
 
   const formatDuration = (ms: number | null) => {
@@ -185,13 +209,14 @@ export default function Planning() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-start gap-4">
-              {/* Botón de carga - tamaño reducido */}
+            <div className="flex items-start gap-6">
+              {/* Botón de carga - TAMAÑO AUMENTADO */}
               <Button 
                 onClick={() => setIsUploadOpen(true)}
-                className="h-12 px-6"
+                className="h-20 px-10 text-lg font-semibold"
+                size="lg"
               >
-                <FileSpreadsheet className="mr-2 h-4 w-4" />
+                <FileSpreadsheet className="mr-3 h-6 w-6" />
                 Cargar Plan CSV
               </Button>
 
@@ -199,7 +224,7 @@ export default function Planning() {
               {loadingUploadInfo ? (
                 <div className="text-sm text-muted-foreground">Cargando info...</div>
               ) : lastUpload ? (
-                <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4 p-3 bg-muted/50 rounded-lg">
+                <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/50 rounded-lg">
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4 text-muted-foreground" />
                     <div>
@@ -229,13 +254,18 @@ export default function Planning() {
                     </div>
                   </div>
                   <div className="col-span-2 md:col-span-4 flex items-center gap-2">
-                    <Badge variant="secondary">{lastUpload.total_filas_validas} registros</Badge>
+                    <Badge variant="secondary">{lastUpload.total_filas_validas} registros cargados</Badge>
                     <span className="text-xs text-muted-foreground">Archivo: {lastUpload.nombre_archivo}</span>
                   </div>
                 </div>
               ) : (
-                <div className="flex-1 p-3 bg-muted/50 rounded-lg text-center text-muted-foreground">
-                  No hay cargas registradas. Cargue su primer plan anual.
+                <div className="flex-1 p-4 bg-muted/50 rounded-lg">
+                  <p className="text-muted-foreground">
+                    {totalOrdenes > 0 
+                      ? `Hay ${totalOrdenes} órdenes de trabajo en el sistema.`
+                      : "No hay cargas registradas. Cargue su primer plan anual."
+                    }
+                  </p>
                 </div>
               )}
             </div>
@@ -251,7 +281,7 @@ export default function Planning() {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setRefreshKey(prev => prev + 1)}>
+            <Button variant="outline" size="sm" onClick={handleRefresh}>
               <RefreshCw className="mr-2 h-4 w-4" />
               Actualizar
             </Button>
@@ -259,7 +289,7 @@ export default function Planning() {
               <Download className="mr-2 h-4 w-4" />
               Exportar CSV
             </Button>
-            {lastUpload && (
+            {totalOrdenes > 0 && (
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -267,7 +297,7 @@ export default function Planning() {
                 className="text-destructive hover:text-destructive"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
-                Eliminar Carga
+                Eliminar Todo
               </Button>
             )}
             <Button size="sm" onClick={handleNewPlan}>
@@ -293,7 +323,7 @@ export default function Planning() {
           <AlertDialogHeader>
             <AlertDialogTitle>¿Eliminar todas las órdenes de trabajo?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción eliminará TODAS las órdenes de trabajo generadas ({lastUpload?.total_filas_validas || 0} registros) 
+              Esta acción eliminará TODAS las órdenes de trabajo ({totalOrdenes} registros) 
               y el historial de carga. Esta acción no se puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>
