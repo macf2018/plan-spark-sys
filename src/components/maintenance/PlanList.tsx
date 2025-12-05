@@ -28,6 +28,7 @@ import {
 import { Eye, Trash2, Search, Filter, ArrowUpDown, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getStatusColor, getStatusLabel, FILTER_STATES } from "@/lib/orderStatus";
 
 interface OrdenTrabajo {
   id: string;
@@ -46,27 +47,10 @@ interface OrdenTrabajo {
   estado: string | null;
   observaciones: string | null;
   created_at: string | null;
+  fecha_inicio: string | null;
+  fecha_fin: string | null;
+  tecnico_asignado: string | null;
 }
-
-const statusColors: Record<string, string> = {
-  planificada: "bg-blue-500",
-  pendiente: "bg-warning",
-  "en ejecución": "bg-green-500",
-  en_ejecucion: "bg-green-500",
-  completada: "bg-muted",
-  cerrada: "bg-muted",
-  cancelada: "bg-destructive",
-};
-
-const statusLabels: Record<string, string> = {
-  planificada: "Planificada",
-  pendiente: "Pendiente",
-  "en ejecución": "En Ejecución",
-  en_ejecucion: "En Ejecución",
-  completada: "Completada",
-  cerrada: "Cerrada",
-  cancelada: "Cancelada",
-};
 
 export function PlanList() {
   const [ordenes, setOrdenes] = useState<OrdenTrabajo[]>([]);
@@ -114,15 +98,19 @@ export function PlanList() {
         o.tramo?.toLowerCase().includes(term) ||
         o.pk?.toLowerCase().includes(term) ||
         o.tipo_equipo?.toLowerCase().includes(term) ||
-        o.proveedor_nombre?.toLowerCase().includes(term)
+        o.proveedor_nombre?.toLowerCase().includes(term) ||
+        o.id?.toLowerCase().includes(term)
       );
     }
 
-    // Filtro por estado
+    // Filtro por estado - usando comparación flexible
     if (statusFilter !== "all") {
-      filtered = filtered.filter(o => 
-        o.estado?.toLowerCase() === statusFilter.toLowerCase()
-      );
+      filtered = filtered.filter(o => {
+        const estadoLower = o.estado?.toLowerCase() || "planificada";
+        const filterLower = statusFilter.toLowerCase();
+        return estadoLower === filterLower || 
+               (filterLower === "en ejecución" && estadoLower === "en_ejecucion");
+      });
     }
 
     // Ordenar por fecha
@@ -163,16 +151,6 @@ export function PlanList() {
     setSortOrder(prev => prev === "asc" ? "desc" : "asc");
   };
 
-  const getStatusColor = (estado: string | null) => {
-    const key = estado?.toLowerCase() || 'planificada';
-    return statusColors[key] || 'bg-muted';
-  };
-
-  const getStatusLabel = (estado: string | null) => {
-    const key = estado?.toLowerCase() || 'planificada';
-    return statusLabels[key] || estado || 'Sin estado';
-  };
-
   if (loading) {
     return (
       <Card className="shadow-notion">
@@ -192,7 +170,10 @@ export function PlanList() {
             <div>
               <CardTitle>Órdenes de Trabajo</CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
-                {filteredOrdenes.length} de {ordenes.length} registros
+                {ordenes.length === 0 
+                  ? "No hay órdenes de trabajo en el sistema"
+                  : `${filteredOrdenes.length} de ${ordenes.length} registros`
+                }
               </p>
             </div>
             <div className="flex gap-2">
@@ -206,16 +187,16 @@ export function PlanList() {
                 />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-44">
                   <Filter className="mr-2 h-4 w-4" />
                   <SelectValue placeholder="Filtrar" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="planificada">Planificadas</SelectItem>
-                  <SelectItem value="en ejecución">En Ejecución</SelectItem>
-                  <SelectItem value="completada">Completadas</SelectItem>
-                  <SelectItem value="cerrada">Cerradas</SelectItem>
+                  {FILTER_STATES.map(state => (
+                    <SelectItem key={state.value} value={state.value}>
+                      {state.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <Button variant="outline" size="icon" onClick={toggleSortOrder} title="Ordenar por fecha">
@@ -225,11 +206,14 @@ export function PlanList() {
           </div>
         </CardHeader>
         <CardContent>
-          {filteredOrdenes.length === 0 ? (
+          {ordenes.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
-              {ordenes.length === 0 
-                ? "No hay órdenes de trabajo. Cargue un plan anual para generar OT."
-                : "No se encontraron resultados con los filtros aplicados."}
+              <p className="text-lg font-medium">No hay órdenes de trabajo</p>
+              <p className="text-sm mt-2">Cargue un plan anual para generar órdenes de trabajo.</p>
+            </div>
+          ) : filteredOrdenes.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <p>No se encontraron resultados con los filtros aplicados.</p>
             </div>
           ) : (
             <Table>
@@ -355,6 +339,22 @@ export function PlanList() {
                 <p className="text-sm">{selectedOrden.ventana_horaria || '-'}</p>
               </div>
               <div>
+                <p className="text-sm font-medium text-muted-foreground">Técnico Asignado</p>
+                <p className="text-sm">{selectedOrden.tecnico_asignado || 'Sin asignar'}</p>
+              </div>
+              {selectedOrden.fecha_inicio && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Fecha Inicio</p>
+                  <p className="text-sm">{new Date(selectedOrden.fecha_inicio).toLocaleString('es-ES')}</p>
+                </div>
+              )}
+              {selectedOrden.fecha_fin && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Fecha Fin</p>
+                  <p className="text-sm">{new Date(selectedOrden.fecha_fin).toLocaleString('es-ES')}</p>
+                </div>
+              )}
+              <div>
                 <p className="text-sm font-medium text-muted-foreground">Creado</p>
                 <p className="text-sm">{selectedOrden.created_at ? new Date(selectedOrden.created_at).toLocaleString('es-ES') : '-'}</p>
               </div>
@@ -364,7 +364,7 @@ export function PlanList() {
               </div>
               <div className="col-span-2">
                 <p className="text-sm font-medium text-muted-foreground">Observaciones</p>
-                <p className="text-sm">{selectedOrden.observaciones || '-'}</p>
+                <p className="text-sm whitespace-pre-wrap">{selectedOrden.observaciones || '-'}</p>
               </div>
             </div>
           )}

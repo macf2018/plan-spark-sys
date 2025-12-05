@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +14,13 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   PlayCircle,
   PauseCircle,
@@ -26,12 +34,14 @@ import {
   Building,
   FileText,
   Loader2,
+  Save,
 } from "lucide-react";
 import { ChecklistForm } from "./ChecklistForm";
 import { PhotoCapture } from "./PhotoCapture";
 import { ObservationsPanel } from "./ObservationsPanel";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { ORDER_STATES } from "@/lib/orderStatus";
 
 interface WorkOrderDetailProps {
   orderId: string;
@@ -74,12 +84,44 @@ const getPriorityBadge = (criticidad: string | null) => {
   }
 };
 
+// Función para registrar cambios en el historial
+const logChange = async (
+  ordenId: string,
+  accion: string,
+  estadoAnterior: string | null,
+  estadoNuevo: string | null,
+  descripcion: string,
+  camposModificados?: Record<string, any>
+) => {
+  try {
+    await supabase
+      .from("ordenes_trabajo_historial")
+      .insert({
+        orden_id: ordenId,
+        accion,
+        estado_anterior: estadoAnterior,
+        estado_nuevo: estadoNuevo,
+        descripcion,
+        campos_modificados: camposModificados || null,
+        usuario: "sistema"
+      });
+  } catch (error) {
+    console.error("Error logging change:", error);
+  }
+};
+
 export function WorkOrderDetail({ orderId, onClose }: WorkOrderDetailProps) {
   const [orden, setOrden] = useState<OrdenTrabajo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<"pending" | "in_progress" | "paused" | "completed">("pending");
   const [showCompleteDialog, setShowCompleteDialog] = useState(false);
   const [completionNotes, setCompletionNotes] = useState("");
+  
+  // Campos editables
+  const [editTecnico, setEditTecnico] = useState("");
+  const [editObservaciones, setEditObservaciones] = useState("");
+  const [editEstado, setEditEstado] = useState("");
 
   // Cargar la orden desde Supabase
   useEffect(() => {
@@ -97,6 +139,10 @@ export function WorkOrderDetail({ orderId, onClose }: WorkOrderDetailProps) {
           toast.error("Error al cargar los detalles de la orden");
         } else if (data) {
           setOrden(data);
+          setEditTecnico(data.tecnico_asignado || "");
+          setEditObservaciones(data.observaciones || "");
+          setEditEstado(data.estado || ORDER_STATES.PLANIFICADA);
+          
           // Mapear estado
           const estadoLower = data.estado?.toLowerCase() || "";
           if (estadoLower.includes("ejecución") || estadoLower.includes("progreso")) {
@@ -120,20 +166,100 @@ export function WorkOrderDetail({ orderId, onClose }: WorkOrderDetailProps) {
     fetchOrden();
   }, [orderId]);
 
+  const handleSaveChanges = async () => {
+    if (!orden) return;
+    
+    setSaving(true);
+    try {
+      const updates: Record<string, any> = {};
+      const cambios: Record<string, { anterior: any; nuevo: any }> = {};
+
+      // Verificar qué campos cambiaron
+      if (editTecnico !== (orden.tecnico_asignado || "")) {
+        updates.tecnico_asignado = editTecnico || null;
+        cambios.tecnico_asignado = { anterior: orden.tecnico_asignado, nuevo: editTecnico };
+      }
+      if (editObservaciones !== (orden.observaciones || "")) {
+        updates.observaciones = editObservaciones || null;
+        cambios.observaciones = { anterior: orden.observaciones, nuevo: editObservaciones };
+      }
+      if (editEstado !== orden.estado) {
+        updates.estado = editEstado;
+        cambios.estado = { anterior: orden.estado, nuevo: editEstado };
+        
+        // Si cambia a "En ejecución" y no tiene fecha_inicio
+        if (editEstado === ORDER_STATES.EN_EJECUCION && !orden.fecha_inicio) {
+          updates.fecha_inicio = new Date().toISOString();
+        }
+        // Si cambia a "Completada"
+        if (editEstado === ORDER_STATES.COMPLETADA && !orden.fecha_fin) {
+          updates.fecha_fin = new Date().toISOString();
+        }
+      }
+
+      if (Object.keys(updates).length === 0) {
+        toast.info("No hay cambios para guardar");
+        setSaving(false);
+        return;
+      }
+
+      const { error } = await supabase
+        .from("ordenes_trabajo")
+        .update(updates)
+        .eq("id", orderId);
+
+      if (error) {
+        toast.error("Error al guardar los cambios");
+        console.error(error);
+        return;
+      }
+
+      // Registrar en historial
+      await logChange(
+        orderId,
+        "MODIFICACIÓN",
+        orden.estado,
+        updates.estado || orden.estado,
+        `Campos modificados: ${Object.keys(cambios).join(", ")}`,
+        cambios
+      );
+
+      // Actualizar estado local
+      setOrden({ ...orden, ...updates });
+      
+      // Actualizar status visual si cambió el estado
+      if (updates.estado) {
+        const estadoLower = updates.estado.toLowerCase();
+        if (estadoLower.includes("ejecución")) setStatus("in_progress");
+        else if (estadoLower.includes("completada") || estadoLower.includes("cerrada")) setStatus("completed");
+        else if (estadoLower.includes("pausada")) setStatus("paused");
+        else setStatus("pending");
+      }
+
+      toast.success("Cambios guardados correctamente");
+    } catch (err) {
+      console.error(err);
+      toast.error("Error al guardar");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleStartPause = async () => {
     if (!orden) return;
 
-    const newStatus = status === "in_progress" ? "Pausada" : "En ejecución";
+    const newStatus = status === "in_progress" ? ORDER_STATES.PAUSADA : ORDER_STATES.EN_EJECUCION;
     
     try {
+      const updateData: Record<string, any> = { estado: newStatus };
+      
+      if (newStatus === ORDER_STATES.EN_EJECUCION && !orden.fecha_inicio) {
+        updateData.fecha_inicio = new Date().toISOString();
+      }
+
       const { error } = await supabase
         .from("ordenes_trabajo")
-        .update({ 
-          estado: newStatus,
-          ...(newStatus === "En ejecución" && !orden.fecha_inicio 
-            ? { fecha_inicio: new Date().toISOString() } 
-            : {})
-        })
+        .update(updateData)
         .eq("id", orderId);
 
       if (error) {
@@ -141,13 +267,26 @@ export function WorkOrderDetail({ orderId, onClose }: WorkOrderDetailProps) {
         return;
       }
 
+      // Registrar en historial
+      await logChange(
+        orderId,
+        status === "in_progress" ? "PAUSA" : "INICIO",
+        orden.estado,
+        newStatus,
+        status === "in_progress" ? "Orden pausada" : "Orden iniciada/reanudada"
+      );
+
       if (status === "in_progress") {
         setStatus("paused");
+        setEditEstado(ORDER_STATES.PAUSADA);
         toast.info("Orden de trabajo pausada");
       } else {
         setStatus("in_progress");
+        setEditEstado(ORDER_STATES.EN_EJECUCION);
         toast.success("Orden de trabajo reanudada");
       }
+      
+      setOrden({ ...orden, estado: newStatus, ...(updateData.fecha_inicio ? { fecha_inicio: updateData.fecha_inicio } : {}) });
     } catch (err) {
       toast.error("Error al actualizar la orden");
     }
@@ -161,14 +300,16 @@ export function WorkOrderDetail({ orderId, onClose }: WorkOrderDetailProps) {
     if (!orden) return;
 
     try {
+      const finalObservaciones = completionNotes 
+        ? `${orden.observaciones || ""}\n--- Notas de cierre ---\n${completionNotes}`.trim()
+        : orden.observaciones;
+
       const { error } = await supabase
         .from("ordenes_trabajo")
         .update({ 
-          estado: "Completada",
+          estado: ORDER_STATES.COMPLETADA,
           fecha_fin: new Date().toISOString(),
-          observaciones: completionNotes 
-            ? `${orden.observaciones || ""}\n--- Notas de cierre ---\n${completionNotes}`.trim()
-            : orden.observaciones
+          observaciones: finalObservaciones
         })
         .eq("id", orderId);
 
@@ -177,14 +318,26 @@ export function WorkOrderDetail({ orderId, onClose }: WorkOrderDetailProps) {
         return;
       }
 
+      // Registrar en historial
+      await logChange(
+        orderId,
+        "COMPLETACIÓN",
+        orden.estado,
+        ORDER_STATES.COMPLETADA,
+        `Orden completada. ${completionNotes ? "Notas: " + completionNotes : ""}`
+      );
+
       setStatus("completed");
+      setEditEstado(ORDER_STATES.COMPLETADA);
       setShowCompleteDialog(false);
       toast.success("Orden de trabajo completada exitosamente", {
         description: "Se ha actualizado el estado en el sistema",
       });
+      
+      // Cerrar después de un momento para que el usuario vea el mensaje
       setTimeout(() => {
         onClose();
-      }, 2000);
+      }, 1500);
     } catch (err) {
       toast.error("Error al completar la orden");
     }
@@ -242,14 +395,6 @@ export function WorkOrderDetail({ orderId, onClose }: WorkOrderDetailProps) {
               </div>
 
               <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-xs text-muted-foreground">Técnico Asignado</p>
-                  <p className="font-medium">{orden.tecnico_asignado || "Sin asignar"}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
                 <Building className="h-4 w-4 text-muted-foreground" />
                 <div>
                   <p className="text-xs text-muted-foreground">Proveedor</p>
@@ -299,6 +444,67 @@ export function WorkOrderDetail({ orderId, onClose }: WorkOrderDetailProps) {
 
           <Separator />
 
+          {/* Sección de edición */}
+          <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
+            <h4 className="font-medium flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Editar Orden
+            </h4>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="tecnico">Técnico Asignado</Label>
+                <Input 
+                  id="tecnico"
+                  value={editTecnico}
+                  onChange={(e) => setEditTecnico(e.target.value)}
+                  placeholder="Nombre del técnico"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="estado">Estado</Label>
+                <Select value={editEstado} onValueChange={setEditEstado}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.values(ORDER_STATES).map(estado => (
+                      <SelectItem key={estado} value={estado}>{estado}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="observaciones">Observaciones</Label>
+              <Textarea
+                id="observaciones"
+                value={editObservaciones}
+                onChange={(e) => setEditObservaciones(e.target.value)}
+                placeholder="Observaciones de la orden..."
+                rows={3}
+              />
+            </div>
+
+            <Button onClick={handleSaveChanges} disabled={saving} className="w-full">
+              {saving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Guardar Cambios
+                </>
+              )}
+            </Button>
+          </div>
+
+          <Separator />
+
           <div>
             <div className="flex items-center gap-2 mb-2">
               <FileText className="h-4 w-4 text-muted-foreground" />
@@ -308,15 +514,6 @@ export function WorkOrderDetail({ orderId, onClose }: WorkOrderDetailProps) {
               {orden.descripcion_trabajo || "Sin descripción"}
             </p>
           </div>
-
-          {orden.observaciones && (
-            <div>
-              <h4 className="text-sm font-medium mb-2">Observaciones</h4>
-              <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                {orden.observaciones}
-              </p>
-            </div>
-          )}
 
           {status !== "completed" && (
             <div className="flex gap-2">
@@ -350,8 +547,8 @@ export function WorkOrderDetail({ orderId, onClose }: WorkOrderDetailProps) {
           )}
 
           {status === "completed" && (
-            <div className="p-4 bg-success/10 border border-success/20 rounded-lg">
-              <div className="flex items-center gap-2 text-success">
+            <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+              <div className="flex items-center gap-2 text-green-600">
                 <CheckCircle2 className="h-5 w-5" />
                 <span className="font-medium">Orden Completada</span>
               </div>
