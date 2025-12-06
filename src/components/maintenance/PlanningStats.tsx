@@ -49,7 +49,7 @@ export function PlanningStats() {
         const fechaProgramada = new Date(orden.fecha_programada);
         fechaProgramada.setHours(0, 0, 0, 0);
         
-        const estadoLower = orden.estado?.toLowerCase() || '';
+        const estadoLower = orden.estado?.toLowerCase() || 'planificada';
         
         if (estadoLower === 'planificada' || estadoLower === 'pendiente') {
           calculatedStats.pendientes++;
@@ -57,7 +57,7 @@ export function PlanningStats() {
           if (fechaProgramada < today) {
             calculatedStats.atrasados++;
           }
-        } else if (estadoLower === 'en ejecución' || estadoLower === 'en_ejecucion' || estadoLower === 'activa') {
+        } else if (estadoLower === 'en ejecución' || estadoLower === 'en_ejecucion' || estadoLower === 'activa' || estadoLower === 'pausada') {
           calculatedStats.activos++;
         } else if (estadoLower === 'completada' || estadoLower === 'cerrada' || estadoLower === 'finalizada') {
           calculatedStats.completados++;
