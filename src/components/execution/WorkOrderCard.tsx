@@ -1,68 +1,80 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Clock, User, Wrench, AlertCircle, PlayCircle, CheckCircle2 } from "lucide-react";
+import { Clock, User, Wrench, AlertCircle, PlayCircle, CheckCircle2, MapPin, Building, Calendar } from "lucide-react";
 
 interface WorkOrderCardProps {
   order: {
     id: string;
-    planName: string;
-    equipment: string;
-    technician: string;
-    scheduledDate: string;
-    status: "pending" | "in_progress" | "completed" | "delayed";
-    priority: "low" | "medium" | "high" | "critical";
-    progress: number;
+    fecha_programada: string;
+    nombre_sitio: string;
+    tramo: string;
+    pk: string;
+    tipo_equipo: string;
+    tipo_mantenimiento: string;
+    frecuencia: string;
+    proveedor_nombre: string | null;
+    tecnico_asignado: string | null;
+    estado: string | null;
+    criticidad: string | null;
+    descripcion_trabajo: string | null;
   };
   onStart: (id: string) => void;
   onViewDetails: (id: string) => void;
 }
 
-const statusConfig = {
-  pending: {
-    label: "Pendiente",
-    color: "bg-muted text-muted-foreground",
-    icon: Clock,
-  },
-  in_progress: {
-    label: "En Progreso",
-    color: "bg-primary text-primary-foreground",
-    icon: PlayCircle,
-  },
-  completed: {
-    label: "Completado",
-    color: "bg-success text-success-foreground",
-    icon: CheckCircle2,
-  },
-  delayed: {
-    label: "Retrasado",
-    color: "bg-destructive text-destructive-foreground",
-    icon: AlertCircle,
-  },
+const getStatusConfig = (estado: string | null) => {
+  const estadoLower = estado?.toLowerCase() || "planificada";
+  
+  if (estadoLower === "en ejecución" || estadoLower === "en_ejecucion") {
+    return { label: "En Ejecución", color: "bg-green-500 text-white", icon: PlayCircle };
+  }
+  if (estadoLower === "pausada") {
+    return { label: "Pausada", color: "bg-warning text-warning-foreground", icon: Clock };
+  }
+  if (estadoLower === "completada" || estadoLower === "cerrada") {
+    return { label: "Completada", color: "bg-muted text-muted-foreground", icon: CheckCircle2 };
+  }
+  if (estadoLower === "cancelada") {
+    return { label: "Cancelada", color: "bg-destructive text-destructive-foreground", icon: AlertCircle };
+  }
+  return { label: "Planificada", color: "bg-blue-500 text-white", icon: Clock };
 };
 
-const priorityConfig = {
-  low: { label: "Baja", color: "bg-muted" },
-  medium: { label: "Media", color: "bg-warning" },
-  high: { label: "Alta", color: "bg-destructive" },
-  critical: { label: "Crítica", color: "bg-destructive animate-pulse" },
+const getPriorityConfig = (criticidad: string | null) => {
+  const critLower = criticidad?.toLowerCase() || "";
+  
+  if (critLower === "crítica" || critLower === "critica" || critLower === "muy alta") {
+    return { label: "Crítica", color: "bg-destructive animate-pulse" };
+  }
+  if (critLower === "alta") {
+    return { label: "Alta", color: "bg-destructive" };
+  }
+  if (critLower === "media") {
+    return { label: "Media", color: "bg-warning" };
+  }
+  return { label: "Baja", color: "bg-muted" };
 };
 
 export function WorkOrderCard({ order, onStart, onViewDetails }: WorkOrderCardProps) {
-  const statusInfo = statusConfig[order.status];
-  const priorityInfo = priorityConfig[order.priority];
+  const statusInfo = getStatusConfig(order.estado);
+  const priorityInfo = getPriorityConfig(order.criticidad);
   const StatusIcon = statusInfo.icon;
+  
+  const isPending = order.estado?.toLowerCase() === "planificada" || !order.estado;
 
   return (
     <Card className="shadow-notion hover:shadow-md transition-smooth">
-      <CardHeader>
+      <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <h3 className="font-semibold">{order.id}</h3>
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-semibold text-sm">OT-{order.id.slice(0, 8).toUpperCase()}</h3>
               <Badge className={priorityInfo.color}>{priorityInfo.label}</Badge>
             </div>
-            <p className="text-sm text-muted-foreground">{order.planName}</p>
+            <p className="text-xs text-muted-foreground line-clamp-1" title={order.nombre_sitio}>
+              {order.nombre_sitio}
+            </p>
           </div>
           <Badge className={statusInfo.color}>
             <StatusIcon className="mr-1 h-3 w-3" />
@@ -71,47 +83,59 @@ export function WorkOrderCard({ order, onStart, onViewDetails }: WorkOrderCardPr
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-3">
-        <div className="flex items-center gap-2 text-sm">
-          <Wrench className="h-4 w-4 text-muted-foreground" />
-          <span>{order.equipment}</span>
-        </div>
-        <div className="flex items-center gap-2 text-sm">
-          <User className="h-4 w-4 text-muted-foreground" />
-          <span>{order.technician}</span>
-        </div>
-        <div className="flex items-center gap-2 text-sm">
-          <Clock className="h-4 w-4 text-muted-foreground" />
-          <span>Programado: {order.scheduledDate}</span>
-        </div>
-
-        {order.status === "in_progress" && (
-          <div className="space-y-1">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Progreso</span>
-              <span className="font-medium">{order.progress}%</span>
-            </div>
-            <div className="h-2 bg-muted rounded-full overflow-hidden">
-              <div
-                className="h-full bg-primary transition-all duration-300"
-                style={{ width: `${order.progress}%` }}
-              />
-            </div>
+      <CardContent className="space-y-2 py-2">
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="flex items-center gap-1.5">
+            <MapPin className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+            <span className="truncate" title={`${order.tramo} / ${order.pk}`}>
+              {order.tramo} / {order.pk}
+            </span>
           </div>
-        )}
+          <div className="flex items-center gap-1.5">
+            <Wrench className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+            <span className="truncate" title={order.tipo_equipo}>{order.tipo_equipo}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Calendar className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+            <span>{order.fecha_programada}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Clock className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+            <span className="truncate">{order.frecuencia}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <User className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+            <span className="truncate" title={order.tecnico_asignado || "Sin asignar"}>
+              {order.tecnico_asignado || "Sin asignar"}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Building className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+            <span className="truncate" title={order.proveedor_nombre || "N/A"}>
+              {order.proveedor_nombre || "N/A"}
+            </span>
+          </div>
+        </div>
+        
+        <div className="pt-1 border-t">
+          <p className="text-xs text-muted-foreground">
+            <span className="font-medium">Mantenimiento:</span> {order.tipo_mantenimiento}
+          </p>
+        </div>
       </CardContent>
 
-      <CardFooter className="gap-2">
+      <CardFooter className="gap-2 pt-2">
         <Button
           variant="outline"
+          size="sm"
           className="flex-1"
           onClick={() => onViewDetails(order.id)}
         >
           Ver Detalles
         </Button>
-        {order.status === "pending" && (
-          <Button className="flex-1" onClick={() => onStart(order.id)}>
-            <PlayCircle className="mr-2 h-4 w-4" />
+        {isPending && (
+          <Button size="sm" className="flex-1" onClick={() => onStart(order.id)}>
+            <PlayCircle className="mr-1 h-3.5 w-3.5" />
             Iniciar
           </Button>
         )}
