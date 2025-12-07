@@ -16,7 +16,7 @@ import { Search, Filter, ArrowUpDown, Bell, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { mapEstadoToUIStatus, mapCriticidadToPriority, FILTER_STATES } from "@/lib/orderStatus";
+import { FILTER_STATES } from "@/lib/orderStatus";
 
 // Tipo para las órdenes de trabajo desde la BD
 interface OrdenTrabajo {
@@ -80,25 +80,8 @@ export default function Execution() {
   const tramosUnicos = [...new Set(ordenes.map(o => o.tramo).filter(Boolean))];
   const proveedoresUnicos = [...new Set(ordenes.map(o => o.proveedor_nombre).filter(Boolean))];
 
-  // Transformar órdenes al formato esperado por WorkOrderCard
-  const transformedOrders = ordenes.map(orden => ({
-    id: orden.id,
-    planName: `${orden.tipo_mantenimiento} - ${orden.nombre_sitio}`,
-    equipment: orden.tipo_equipo,
-    technician: orden.tecnico_asignado || "Sin asignar",
-    scheduledDate: orden.fecha_programada,
-    status: mapEstadoToUIStatus(orden.estado),
-    priority: mapCriticidadToPriority(orden.criticidad),
-    progress: orden.estado?.toLowerCase() === "en ejecución" ? 50 : 
-              orden.estado?.toLowerCase() === "completada" ? 100 : 0,
-    // Campos adicionales para el detalle
-    tramo: orden.tramo,
-    pk: orden.pk,
-    proveedor_nombre: orden.proveedor_nombre,
-    frecuencia: orden.frecuencia,
-    descripcion_trabajo: orden.descripcion_trabajo,
-    ventana_horaria: orden.ventana_horaria,
-  }));
+  // Las órdenes se pasan directamente, sin transformación
+  // WorkOrderCard ahora espera los campos reales de la tabla
 
   const handleStartOrder = async (orderId: string) => {
     try {
@@ -157,38 +140,47 @@ export default function Execution() {
     fetchOrdenes();
   };
 
-  // Filtrar órdenes - usando estados unificados
-  const filteredOrders = transformedOrders.filter((order) => {
+  // Filtrar órdenes directamente desde los datos reales
+  const filteredOrders = ordenes.filter((orden) => {
     const matchesSearch =
-      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.planName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.equipment.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (order.tramo?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-      (order.pk?.toLowerCase() || "").includes(searchTerm.toLowerCase());
+      orden.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      orden.nombre_sitio.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      orden.tipo_equipo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      orden.tramo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      orden.pk.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (orden.proveedor_nombre?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (orden.tecnico_asignado?.toLowerCase() || "").includes(searchTerm.toLowerCase());
 
     // Mapear filtro de estado
     let matchesStatus = filterStatus === "all";
     if (!matchesStatus) {
-      const originalOrder = ordenes.find(o => o.id === order.id);
-      const estadoDB = originalOrder?.estado?.toLowerCase() || "planificada";
+      const estadoDB = orden.estado?.toLowerCase() || "planificada";
       const filterLower = filterStatus.toLowerCase();
       matchesStatus = estadoDB === filterLower || 
                       (filterLower === "en ejecución" && estadoDB === "en_ejecucion");
     }
     
-    const originalOrder = ordenes.find(o => o.id === order.id);
-    const matchesTramo = filterTramo === "all" || originalOrder?.tramo === filterTramo;
-    const matchesProveedor = filterProveedor === "all" || originalOrder?.proveedor_nombre === filterProveedor;
+    const matchesTramo = filterTramo === "all" || orden.tramo === filterTramo;
+    const matchesProveedor = filterProveedor === "all" || orden.proveedor_nombre === filterProveedor;
 
     return matchesSearch && matchesStatus && matchesTramo && matchesProveedor;
   });
 
-  // Contadores
+  // Contadores basados en estados reales de la BD
   const totalOrders = ordenes.length;
-  const delayedOrders = transformedOrders.filter(o => o.status === "delayed").length;
-  const activeOrders = transformedOrders.filter(o => o.status === "in_progress").length;
-  const pendingOrders = transformedOrders.filter(o => o.status === "pending").length;
-  const completedOrders = transformedOrders.filter(o => o.status === "completed").length;
+  const delayedOrders = ordenes.filter(o => o.estado?.toLowerCase() === "cancelada").length;
+  const activeOrders = ordenes.filter(o => {
+    const estado = o.estado?.toLowerCase() || "";
+    return estado === "en ejecución" || estado === "en_ejecucion" || estado === "pausada";
+  }).length;
+  const pendingOrders = ordenes.filter(o => {
+    const estado = o.estado?.toLowerCase() || "planificada";
+    return estado === "planificada" || estado === "pendiente";
+  }).length;
+  const completedOrders = ordenes.filter(o => {
+    const estado = o.estado?.toLowerCase() || "";
+    return estado === "completada" || estado === "cerrada";
+  }).length;
 
   // Vista de detalle - con navegación funcional
   if (selectedOrder) {
