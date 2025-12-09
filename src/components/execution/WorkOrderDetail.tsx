@@ -70,7 +70,10 @@ interface OrdenTrabajo {
 }
 
 const getPriorityBadge = (criticidad: string | null) => {
-  switch (criticidad?.toLowerCase()) {
+  if (!criticidad) {
+    return <Badge className="bg-muted">–</Badge>;
+  }
+  switch (criticidad.toLowerCase()) {
     case "crítica":
     case "critica":
     case "muy alta":
