@@ -42,7 +42,10 @@ const getStatusConfig = (estado: string | null) => {
 };
 
 const getPriorityConfig = (criticidad: string | null) => {
-  const critLower = criticidad?.toLowerCase() || "";
+  if (!criticidad) {
+    return { label: "–", color: "bg-muted" };
+  }
+  const critLower = criticidad.toLowerCase();
   
   if (critLower === "crítica" || critLower === "critica" || critLower === "muy alta") {
     return { label: "Crítica", color: "bg-destructive animate-pulse" };
@@ -117,10 +120,15 @@ export function WorkOrderCard({ order, onStart, onViewDetails }: WorkOrderCardPr
           </div>
         </div>
         
-        <div className="pt-1 border-t">
+        <div className="pt-1 border-t space-y-1">
           <p className="text-xs text-muted-foreground">
             <span className="font-medium">Mantenimiento:</span> {order.tipo_mantenimiento}
           </p>
+          {order.descripcion_trabajo && (
+            <p className="text-xs text-muted-foreground line-clamp-2" title={order.descripcion_trabajo}>
+              <span className="font-medium">Descripción:</span> {order.descripcion_trabajo}
+            </p>
+          )}
         </div>
       </CardContent>
 
