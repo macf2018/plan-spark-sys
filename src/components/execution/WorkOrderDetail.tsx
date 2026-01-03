@@ -96,20 +96,21 @@ const logChange = async (
   descripcion: string,
   camposModificados?: Record<string, any>
 ) => {
-  try {
-    await supabase
-      .from("ordenes_trabajo_historial")
-      .insert({
-        orden_id: ordenId,
-        accion,
-        estado_anterior: estadoAnterior,
-        estado_nuevo: estadoNuevo,
-        descripcion,
-        campos_modificados: camposModificados || null,
-        usuario: "sistema"
-      });
-  } catch (error) {
+  const { error } = await supabase
+    .from("ordenes_trabajo_historial")
+    .insert({
+      orden_id: ordenId,
+      accion,
+      estado_anterior: estadoAnterior,
+      estado_nuevo: estadoNuevo,
+      descripcion,
+      campos_modificados: camposModificados || null,
+      usuario: "sistema"
+    });
+  
+  if (error) {
     console.error("Error logging change:", error);
+    throw error;
   }
 };
 
