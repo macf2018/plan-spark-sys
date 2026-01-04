@@ -228,12 +228,25 @@ export function WorkOrderDetail({ orderId, onClose }: WorkOrderDetailProps) {
         cambios
       );
 
-      // Actualizar estado local
-      setOrden({ ...orden, ...updates });
-      
-      // Actualizar status visual si cambió el estado
-      if (updates.estado) {
-        const estadoLower = updates.estado.toLowerCase();
+      // Recargar desde la base de datos para confirmar persistencia
+      const { data: updatedOrden, error: fetchError } = await supabase
+        .from("ordenes_trabajo")
+        .select("*")
+        .eq("id", orderId)
+        .maybeSingle();
+
+      if (fetchError || !updatedOrden) {
+        console.error("Error al recargar orden:", fetchError);
+        toast.warning("Cambios guardados pero no se pudo recargar");
+        setOrden({ ...orden, ...updates });
+      } else {
+        setOrden(updatedOrden);
+        setEditTecnico(updatedOrden.tecnico_asignado || "");
+        setEditObservaciones(updatedOrden.observaciones || "");
+        setEditEstado(updatedOrden.estado || ORDER_STATES.PLANIFICADA);
+        
+        // Actualizar status visual
+        const estadoLower = updatedOrden.estado?.toLowerCase() || "";
         if (estadoLower.includes("ejecución")) setStatus("in_progress");
         else if (estadoLower.includes("completada") || estadoLower.includes("cerrada")) setStatus("completed");
         else if (estadoLower.includes("pausada")) setStatus("paused");
