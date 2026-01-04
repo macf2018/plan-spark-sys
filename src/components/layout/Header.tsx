@@ -10,6 +10,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 interface HeaderProps {
   title: string;
@@ -18,6 +20,17 @@ interface HeaderProps {
 
 export function Header({ title, showNavigation = false }: HeaderProps) {
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast.success("Sesión cerrada");
+      navigate("/auth", { replace: true });
+    } catch (error) {
+      toast.error("Error al cerrar sesión");
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-card px-4 shadow-sm backdrop-blur-sm bg-card/95">
@@ -63,7 +76,7 @@ export function Header({ title, showNavigation = false }: HeaderProps) {
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium">Juan Pérez</p>
+                <p className="text-sm font-medium">{user?.email || "Usuario"}</p>
                 <p className="text-xs text-muted-foreground">
                   Supervisor de Mantenimiento
                 </p>
@@ -74,9 +87,12 @@ export function Header({ title, showNavigation = false }: HeaderProps) {
               <User className="mr-2 h-4 w-4" />
               Perfil
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive cursor-pointer transition-fast">
+            <DropdownMenuItem 
+              className="text-destructive cursor-pointer transition-fast"
+              onClick={handleSignOut}
+            >
               <LogOut className="mr-2 h-4 w-4" />
-              Salir
+              Cerrar sesión
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
