@@ -20,9 +20,13 @@ export default function Auth() {
   const [checkingSession, setCheckingSession] = useState(true);
 
   useEffect(() => {
-    // Check URL hash for recovery token first
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    if (hashParams.get("type") === "recovery") {
+    // IMPORTANT: Detect recovery from hash BEFORE any redirect logic
+    const hash = window.location.hash.substring(1);
+    const hashParams = new URLSearchParams(hash);
+    const isRecovery = hashParams.get("type") === "recovery";
+
+    // If recovery mode, immediately set view and stop checking
+    if (isRecovery) {
       setView("reset");
       setCheckingSession(false);
     }
@@ -30,14 +34,25 @@ export default function Auth() {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        // Re-check hash on every event (it might still be there)
+        const currentHash = window.location.hash.substring(1);
+        const currentHashParams = new URLSearchParams(currentHash);
+        const currentIsRecovery = currentHashParams.get("type") === "recovery";
+
+        // Handle PASSWORD_RECOVERY event or recovery hash
+        if (event === "PASSWORD_RECOVERY" || currentIsRecovery) {
+          setView("reset");
+          setCheckingSession(false);
+          return; // DO NOT navigate away
+        }
+
         // Handle USER_UPDATED after password reset
         if (event === "USER_UPDATED" && view === "reset") {
-          // Password was updated, stay on page to show success
-          return;
+          return; // Stay on page
         }
         
-        // Handle successful sign-in (but not during password reset flow)
-        if (session?.user && view !== "reset" && view !== "forgot") {
+        // Only redirect to "/" if NOT in recovery/forgot/reset flow
+        if (session?.user && view !== "reset" && view !== "forgot" && !currentIsRecovery) {
           navigate("/", { replace: true });
         }
         setCheckingSession(false);
@@ -46,14 +61,19 @@ export default function Auth() {
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      const isRecovery = hashParams.get("type") === "recovery";
+      // Re-check hash here too
+      const currentHash = window.location.hash.substring(1);
+      const currentHashParams = new URLSearchParams(currentHash);
+      const currentIsRecovery = currentHashParams.get("type") === "recovery";
       
-      if (session?.user && !isRecovery) {
-        navigate("/", { replace: true });
-      }
-      if (isRecovery) {
+      if (currentIsRecovery) {
         setView("reset");
+        setCheckingSession(false);
+        return; // DO NOT navigate away
+      }
+
+      if (session?.user) {
+        navigate("/", { replace: true });
       }
       setCheckingSession(false);
     });
