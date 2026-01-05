@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -19,67 +19,77 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
 
+  // Keep these refs stable so we don't recreate the auth listener
+  const recoveryModeRef = useRef(false);
+  const viewRef = useRef<AuthView>(view);
+
   useEffect(() => {
-    // IMPORTANT: Detect recovery from hash BEFORE any redirect logic
-    const hash = window.location.hash.substring(1);
-    const hashParams = new URLSearchParams(hash);
+    viewRef.current = view;
+  }, [view]);
+
+  useEffect(() => {
+    // Latch recovery mode ONCE based on initial hash
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
     const isRecovery = hashParams.get("type") === "recovery";
 
-    // If recovery mode, immediately set view and stop checking
     if (isRecovery) {
+      recoveryModeRef.current = true;
       setView("reset");
       setCheckingSession(false);
     }
 
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        // Re-check hash on every event (it might still be there)
-        const currentHash = window.location.hash.substring(1);
-        const currentHashParams = new URLSearchParams(currentHash);
-        const currentIsRecovery = currentHashParams.get("type") === "recovery";
-
-        // Handle PASSWORD_RECOVERY event or recovery hash
-        if (event === "PASSWORD_RECOVERY" || currentIsRecovery) {
-          setView("reset");
-          setCheckingSession(false);
-          return; // DO NOT navigate away
-        }
-
-        // Handle USER_UPDATED after password reset
-        if (event === "USER_UPDATED" && view === "reset") {
-          return; // Stay on page
-        }
-        
-        // Only redirect to "/" if NOT in recovery/forgot/reset flow
-        if (session?.user && view !== "reset" && view !== "forgot" && !currentIsRecovery) {
-          navigate("/", { replace: true });
-        }
-        setCheckingSession(false);
+    // Set up auth state listener (do not depend on `view` to avoid recreating it)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      // If we enter recovery flow, latch it.
+      if (event === "PASSWORD_RECOVERY") {
+        recoveryModeRef.current = true;
       }
-    );
+
+      // If recovery is active, NEVER navigate away.
+      if (event === "PASSWORD_RECOVERY" || recoveryModeRef.current) {
+        setView("reset");
+        setCheckingSession(false);
+        return;
+      }
+
+      // Handle USER_UPDATED after password reset
+      if (event === "USER_UPDATED" && viewRef.current === "reset") {
+        return;
+      }
+
+      // Only redirect to "/" if NOT in forgot/reset flow
+      if (
+        session?.user &&
+        !recoveryModeRef.current &&
+        viewRef.current !== "reset" &&
+        viewRef.current !== "forgot"
+      ) {
+        navigate("/", { replace: true });
+      }
+
+      setCheckingSession(false);
+    });
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      // Re-check hash here too
-      const currentHash = window.location.hash.substring(1);
-      const currentHashParams = new URLSearchParams(currentHash);
-      const currentIsRecovery = currentHashParams.get("type") === "recovery";
-      
-      if (currentIsRecovery) {
+      // If recovery is active, stay here.
+      if (recoveryModeRef.current) {
         setView("reset");
         setCheckingSession(false);
-        return; // DO NOT navigate away
+        return;
       }
 
-      if (session?.user) {
+      if (session?.user && viewRef.current !== "reset" && viewRef.current !== "forgot") {
         navigate("/", { replace: true });
       }
+
       setCheckingSession(false);
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, view]);
+  }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -226,12 +236,14 @@ export default function Auth() {
       toast.success("Contraseña actualizada correctamente");
       // Clear hash and reset form
       window.history.replaceState(null, "", window.location.pathname);
+      recoveryModeRef.current = false;
+
       setPassword("");
       setConfirmPassword("");
-      setView("login");
-      
+
       // Sign out to force fresh login with new password
       await supabase.auth.signOut();
+      setView("login");
     } catch (err) {
       console.error("Update password error:", err);
       toast.error("Error al actualizar la contraseña");
