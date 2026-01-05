@@ -27,6 +27,12 @@ export default function Auth() {
     viewRef.current = view;
   }, [view]);
 
+  // Handle manual view changes - ensure checkingSession is false
+  const handleViewChange = (newView: AuthView) => {
+    setView(newView);
+    setCheckingSession(false);
+  };
+
   useEffect(() => {
     // Latch recovery mode ONCE based on initial hash
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -288,7 +294,7 @@ export default function Auth() {
                 type="button"
                 variant="ghost"
                 className="w-full"
-                onClick={() => setView("login")}
+                onClick={() => handleViewChange("login")}
                 disabled={loading}
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
@@ -375,7 +381,7 @@ export default function Auth() {
               <span className="text-muted-foreground">¿Ya tienes cuenta?</span>{" "}
               <button
                 type="button"
-                onClick={() => setView("login")}
+                onClick={() => handleViewChange("login")}
                 className="font-medium text-primary hover:underline"
                 disabled={loading}
               >
@@ -407,7 +413,7 @@ export default function Auth() {
                   <Label htmlFor="password">Contraseña</Label>
                   <button
                     type="button"
-                    onClick={() => setView("forgot")}
+                    onClick={() => handleViewChange("forgot")}
                     className="text-xs text-primary hover:underline"
                     disabled={loading}
                   >
@@ -435,7 +441,7 @@ export default function Auth() {
               <span className="text-muted-foreground">¿No tienes cuenta?</span>{" "}
               <button
                 type="button"
-                onClick={() => setView("signup")}
+                onClick={() => handleViewChange("signup")}
                 className="font-medium text-primary hover:underline"
                 disabled={loading}
               >
