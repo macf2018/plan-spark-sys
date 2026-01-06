@@ -581,7 +581,7 @@ export function WorkOrderDetail({ orderId, onClose }: WorkOrderDetailProps) {
         </div>
 
         <div>
-          <ObservationsPanel />
+          <ObservationsPanel orderId={orderId} />
         </div>
       </div>
 

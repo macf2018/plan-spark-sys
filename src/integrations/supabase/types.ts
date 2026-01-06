@@ -534,6 +534,59 @@ export type Database = {
           },
         ]
       }
+      ordenes_trabajo_checklist: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          description: string | null
+          id: string
+          item_key: string
+          notes: string | null
+          orden_id: string
+          required: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          item_key: string
+          notes?: string | null
+          orden_id: string
+          required?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          item_key?: string
+          notes?: string | null
+          orden_id?: string
+          required?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ordenes_trabajo_checklist_orden_id_fkey"
+            columns: ["orden_id"]
+            isOneToOne: false
+            referencedRelation: "ordenes_trabajo"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ordenes_trabajo_historial: {
         Row: {
           accion: string
@@ -574,6 +627,41 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "ordenes_trabajo_historial_orden_id_fkey"
+            columns: ["orden_id"]
+            isOneToOne: false
+            referencedRelation: "ordenes_trabajo"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ordenes_trabajo_observaciones: {
+        Row: {
+          author: string
+          created_at: string
+          id: string
+          orden_id: string
+          text: string
+          type: string
+        }
+        Insert: {
+          author: string
+          created_at?: string
+          id?: string
+          orden_id: string
+          text: string
+          type?: string
+        }
+        Update: {
+          author?: string
+          created_at?: string
+          id?: string
+          orden_id?: string
+          text?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ordenes_trabajo_observaciones_orden_id_fkey"
             columns: ["orden_id"]
             isOneToOne: false
             referencedRelation: "ordenes_trabajo"

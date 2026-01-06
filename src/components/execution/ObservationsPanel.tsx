@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, AlertTriangle, Info, CheckCircle2 } from "lucide-react";
+import { MessageSquare, AlertTriangle, Info, CheckCircle2, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Observation {
   id: string;
@@ -14,43 +15,107 @@ interface Observation {
   author: string;
 }
 
-export function ObservationsPanel() {
-  const [observations, setObservations] = useState<Observation[]>([
-    {
-      id: "1",
-      type: "warning",
-      text: "Se detectó calentamiento en el cable de fase R, se recomienda revisión adicional",
-      timestamp: new Date(Date.now() - 3600000).toLocaleString(),
-      author: "Carlos Rodríguez",
-    },
-    {
-      id: "2",
-      type: "success",
-      text: "Mediciones de aislamiento dentro de parámetros normales",
-      timestamp: new Date(Date.now() - 1800000).toLocaleString(),
-      author: "Carlos Rodríguez",
-    },
-  ]);
+interface ObservationsPanelProps {
+  orderId: string;
+}
+
+export function ObservationsPanel({ orderId }: ObservationsPanelProps) {
+  const [observations, setObservations] = useState<Observation[]>([]);
   const [newObservation, setNewObservation] = useState("");
   const [observationType, setObservationType] = useState<"info" | "warning" | "success">("info");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  const addObservation = () => {
+  // Load observations from DB
+  const loadObservations = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from("ordenes_trabajo_observaciones")
+        .select("*")
+        .eq("orden_id", orderId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      if (data) {
+        setObservations(
+          data.map((row) => ({
+            id: row.id,
+            type: row.type as "info" | "warning" | "success",
+            text: row.text,
+            timestamp: new Date(row.created_at).toLocaleString(),
+            author: row.author,
+          }))
+        );
+      }
+    } catch (err) {
+      console.error("Error loading observations:", err);
+      toast.error("Error al cargar observaciones");
+    } finally {
+      setLoading(false);
+    }
+  }, [orderId]);
+
+  useEffect(() => {
+    loadObservations();
+  }, [loadObservations]);
+
+  const addObservation = async () => {
     if (!newObservation.trim()) {
       toast.error("Ingrese una observación");
       return;
     }
 
-    const observation: Observation = {
-      id: Date.now().toString(),
-      type: observationType,
-      text: newObservation,
-      timestamp: new Date().toLocaleString(),
-      author: "Carlos Rodríguez", // En producción vendría del usuario autenticado
-    };
+    setSaving(true);
+    try {
+      const { data, error } = await supabase
+        .from("ordenes_trabajo_observaciones")
+        .insert({
+          orden_id: orderId,
+          type: observationType,
+          text: newObservation.trim(),
+          author: "Usuario Actual", // In production, get from auth context
+        })
+        .select()
+        .single();
 
-    setObservations([observation, ...observations]);
-    setNewObservation("");
-    toast.success("Observación registrada");
+      if (error) throw error;
+
+      if (data) {
+        const newObs: Observation = {
+          id: data.id,
+          type: data.type as "info" | "warning" | "success",
+          text: data.text,
+          timestamp: new Date(data.created_at).toLocaleString(),
+          author: data.author,
+        };
+        setObservations([newObs, ...observations]);
+        setNewObservation("");
+        toast.success("Observación registrada");
+      }
+    } catch (err) {
+      console.error("Error adding observation:", err);
+      toast.error("Error al guardar observación");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteObservation = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("ordenes_trabajo_observaciones")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      setObservations(observations.filter((obs) => obs.id !== id));
+      toast.success("Observación eliminada");
+    } catch (err) {
+      console.error("Error deleting observation:", err);
+      toast.error("Error al eliminar observación");
+    }
   };
 
   const typeConfig = {
@@ -74,6 +139,17 @@ export function ObservationsPanel() {
     },
   };
 
+  if (loading) {
+    return (
+      <Card className="shadow-notion">
+        <CardContent className="flex items-center justify-center py-8">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <span className="ml-2 text-muted-foreground">Cargando observaciones...</span>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="shadow-notion">
       <CardHeader>
@@ -90,6 +166,7 @@ export function ObservationsPanel() {
               variant={observationType === "info" ? "default" : "outline"}
               size="sm"
               onClick={() => setObservationType("info")}
+              disabled={saving}
             >
               <Info className="mr-2 h-4 w-4" />
               Info
@@ -98,6 +175,7 @@ export function ObservationsPanel() {
               variant={observationType === "warning" ? "default" : "outline"}
               size="sm"
               onClick={() => setObservationType("warning")}
+              disabled={saving}
             >
               <AlertTriangle className="mr-2 h-4 w-4" />
               Alerta
@@ -106,6 +184,7 @@ export function ObservationsPanel() {
               variant={observationType === "success" ? "default" : "outline"}
               size="sm"
               onClick={() => setObservationType("success")}
+              disabled={saving}
             >
               <CheckCircle2 className="mr-2 h-4 w-4" />
               Éxito
@@ -117,10 +196,18 @@ export function ObservationsPanel() {
             value={newObservation}
             onChange={(e) => setNewObservation(e.target.value)}
             rows={3}
+            disabled={saving}
           />
 
-          <Button onClick={addObservation} className="w-full">
-            Agregar Observación
+          <Button onClick={addObservation} className="w-full" disabled={saving}>
+            {saving ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Guardando...
+              </>
+            ) : (
+              "Agregar Observación"
+            )}
           </Button>
         </div>
 
@@ -150,13 +237,21 @@ export function ObservationsPanel() {
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <Icon className="h-4 w-4" />
-                        <Badge className={config.badge}>
-                          {config.label}
-                        </Badge>
+                        <Badge className={config.badge}>{config.label}</Badge>
                       </div>
-                      <span className="text-xs text-muted-foreground">
-                        {obs.timestamp}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">
+                          {obs.timestamp}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => deleteObservation(obs.id)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
                     </div>
                     <p className="text-sm">{obs.text}</p>
                     <p className="text-xs text-muted-foreground">
