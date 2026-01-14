@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, Wrench, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
+import { VespucioLogo } from "@/components/layout/VespucioLogo";
 
 type AuthView = "login" | "signup" | "forgot" | "reset";
 
@@ -19,7 +20,6 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
 
-  // Keep these refs stable so we don't recreate the auth listener
   const recoveryModeRef = useRef(false);
   const viewRef = useRef<AuthView>(view);
 
@@ -27,14 +27,12 @@ export default function Auth() {
     viewRef.current = view;
   }, [view]);
 
-  // Handle manual view changes - ensure checkingSession is false
   const handleViewChange = (newView: AuthView) => {
     setView(newView);
     setCheckingSession(false);
   };
 
   useEffect(() => {
-    // Latch recovery mode ONCE based on initial hash
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
     const isRecovery = hashParams.get("type") === "recovery";
 
@@ -44,28 +42,23 @@ export default function Auth() {
       setCheckingSession(false);
     }
 
-    // Set up auth state listener (do not depend on `view` to avoid recreating it)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      // If we enter recovery flow, latch it.
       if (event === "PASSWORD_RECOVERY") {
         recoveryModeRef.current = true;
       }
 
-      // If recovery is active, NEVER navigate away.
       if (event === "PASSWORD_RECOVERY" || recoveryModeRef.current) {
         setView("reset");
         setCheckingSession(false);
         return;
       }
 
-      // Handle USER_UPDATED after password reset
       if (event === "USER_UPDATED" && viewRef.current === "reset") {
         return;
       }
 
-      // Only redirect to "/" if NOT in forgot/reset flow
       if (
         session?.user &&
         !recoveryModeRef.current &&
@@ -78,9 +71,7 @@ export default function Auth() {
       setCheckingSession(false);
     });
 
-    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      // If recovery is active, stay here.
       if (recoveryModeRef.current) {
         setView("reset");
         setCheckingSession(false);
@@ -240,14 +231,12 @@ export default function Auth() {
       }
 
       toast.success("Contraseña actualizada correctamente");
-      // Clear hash and reset form
       window.history.replaceState(null, "", window.location.pathname);
       recoveryModeRef.current = false;
 
       setPassword("");
       setConfirmPassword("");
 
-      // Sign out to force fresh login with new password
       await supabase.auth.signOut();
       setView("login");
     } catch (err) {
@@ -261,7 +250,7 @@ export default function Auth() {
   if (checkingSession) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader2 className="h-8 w-8 animate-spin text-warning" />
       </div>
     );
   }
@@ -382,7 +371,7 @@ export default function Auth() {
               <button
                 type="button"
                 onClick={() => handleViewChange("login")}
-                className="font-medium text-primary hover:underline"
+                className="font-medium text-warning hover:underline"
                 disabled={loading}
               >
                 Inicia sesión
@@ -390,7 +379,7 @@ export default function Auth() {
             </div>
           ),
         };
-      default: // login
+      default:
         return {
           title: "Sistema de Gestión de Mantenimiento",
           description: "Inicia sesión para continuar",
@@ -414,7 +403,7 @@ export default function Auth() {
                   <button
                     type="button"
                     onClick={() => handleViewChange("forgot")}
-                    className="text-xs text-primary hover:underline"
+                    className="text-xs text-warning hover:underline"
                     disabled={loading}
                   >
                     ¿Olvidaste tu contraseña?
@@ -442,7 +431,7 @@ export default function Auth() {
               <button
                 type="button"
                 onClick={() => handleViewChange("signup")}
-                className="font-medium text-primary hover:underline"
+                className="font-medium text-warning hover:underline"
                 disabled={loading}
               >
                 Regístrate
@@ -456,14 +445,15 @@ export default function Auth() {
   const content = getViewContent();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-      <Card className="w-full max-w-md shadow-lg">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md shadow-lg border-border">
         <CardHeader className="text-center space-y-4">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <Wrench className="h-7 w-7" />
+          {/* Logo corporativo en login */}
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-xl bg-primary">
+            <VespucioLogo collapsed={true} className="justify-center" />
           </div>
           <div>
-            <CardTitle className="text-2xl">{content.title}</CardTitle>
+            <CardTitle className="text-2xl text-foreground">{content.title}</CardTitle>
             <CardDescription className="mt-2">{content.description}</CardDescription>
           </div>
         </CardHeader>

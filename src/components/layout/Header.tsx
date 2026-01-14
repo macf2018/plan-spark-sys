@@ -12,6 +12,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { VespucioLogo } from "./VespucioLogo";
 
 interface HeaderProps {
   title: string;
@@ -33,8 +34,13 @@ export function Header({ title, showNavigation = false }: HeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-card px-4 shadow-sm backdrop-blur-sm bg-card/95">
-      <SidebarTrigger className="transition-fast" />
+    <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-border bg-primary px-4 shadow-md">
+      {/* Logo corporativo - siempre visible */}
+      <VespucioLogo collapsed={false} />
+      
+      <div className="h-8 w-px bg-white/20" />
+      
+      <SidebarTrigger className="transition-fast text-white hover:bg-white/10" />
       
       {showNavigation && (
         <div className="flex gap-1">
@@ -42,7 +48,7 @@ export function Header({ title, showNavigation = false }: HeaderProps) {
             variant="ghost"
             size="icon"
             onClick={() => navigate(-1)}
-            className="h-8 w-8 transition-fast"
+            className="h-8 w-8 transition-fast text-white hover:bg-white/10"
             title="Atrás"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -51,7 +57,7 @@ export function Header({ title, showNavigation = false }: HeaderProps) {
             variant="ghost"
             size="icon"
             onClick={() => navigate(1)}
-            className="h-8 w-8 transition-fast"
+            className="h-8 w-8 transition-fast text-white hover:bg-white/10"
             title="Adelante"
           >
             <ChevronRight className="h-4 w-4" />
@@ -59,17 +65,27 @@ export function Header({ title, showNavigation = false }: HeaderProps) {
         </div>
       )}
 
-      <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
+      <h1 className="text-lg font-semibold tracking-tight text-white">{title}</h1>
 
       <div className="ml-auto flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="relative transition-fast" title="Notificaciones">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="relative transition-fast text-white hover:bg-white/10" 
+          title="Notificaciones"
+        >
           <Bell className="h-5 w-5" />
-          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-destructive animate-pulse" />
+          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-warning animate-pulse" />
         </Button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="transition-fast" title="Perfil de usuario">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="transition-fast text-white hover:bg-white/10" 
+              title="Perfil de usuario"
+            >
               <User className="h-5 w-5" />
             </Button>
           </DropdownMenuTrigger>

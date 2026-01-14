@@ -9,12 +9,18 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary-hover shadow-sm hover:shadow",
+        // Naranjo corporativo - Acción principal (Guardar, Ejecutar, Confirmar)
+        default: "bg-warning text-warning-foreground hover:bg-primary shadow-sm hover:shadow",
+        // Rojo estándar - Destructivo
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm hover:shadow",
-        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-sm",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+        // Outline - Bordes
+        outline: "border border-input bg-background hover:bg-muted hover:text-foreground",
+        // Turquesa - Acción secundaria (Registrar, Ver, Alternativa)
+        secondary: "bg-accent text-accent-foreground hover:bg-accent/90 shadow-sm",
+        // Ghost
+        ghost: "hover:bg-muted hover:text-foreground",
+        // Link - Naranjo corporativo
+        link: "text-warning underline-offset-4 hover:underline",
       },
       size: {
         default: "h-10 px-4 py-2",

@@ -2,116 +2,97 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* Autopista Vespucio Norte - SGME Design System
+   Paleta corporativa oficial - UX simple, sobria, operativa, enterprise
+   All colors MUST be HSL.
 */
 
 @layer base {
   :root {
-    /* Sistema de Gestión de Mantenimiento Eléctrico - Design System */
-    --background: 0 0% 98%;
-    --foreground: 215 25% 15%;
+    /* === PALETA CORPORATIVA VESPUCIO NORTE === */
+    
+    /* Fondo oscuro principal #1C1C1E */
+    --background: 240 4% 12%;
+    --foreground: 0 0% 100%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    /* Fondo cards/inputs #2A2A2E */
+    --card: 240 4% 17%;
+    --card-foreground: 0 0% 100%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover: 240 4% 17%;
+    --popover-foreground: 0 0% 100%;
 
-    /* Industrial blue theme */
-    --primary: 210 85% 45%;
+    /* Morado corporativo (estructura) #2B235F → HSL(250, 46%, 26%) */
+    --primary: 250 46% 26%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 210 85% 38%;
+    --primary-hover: 250 46% 35%;
 
-    --secondary: 215 20% 92%;
-    --secondary-foreground: 215 25% 25%;
+    /* Morado secundario (títulos/foco) #7A6BC4 → HSL(250, 40%, 59%) */
+    --secondary: 250 40% 59%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 215 20% 95%;
-    --muted-foreground: 215 15% 50%;
+    /* Fondo cards/muted */
+    --muted: 240 4% 20%;
+    --muted-foreground: 248 10% 73%;
 
-    --accent: 155 65% 45%;
+    /* Turquesa funcional (acción secundaria) #10A6C8 → HSL(191, 85%, 42%) */
+    --accent: 191 85% 42%;
     --accent-foreground: 0 0% 100%;
 
+    /* Error rojo estándar */
     --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
+    /* Naranjo corporativo (acción principal/advertencia) #C46A12 → HSL(29, 83%, 42%) */
+    --warning: 29 83% 42%;
     --warning-foreground: 0 0% 100%;
 
+    /* Éxito verde estándar */
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
 
-    --border: 215 20% 88%;
-    --input: 215 20% 92%;
-    --ring: 210 85% 45%;
+    /* Info turquesa */
+    --info: 191 85% 42%;
+    --info-foreground: 0 0% 100%;
+
+    /* Bordes #3A3A3E */
+    --border: 240 3% 23%;
+    --input: 240 4% 17%;
+    --ring: 250 40% 59%;
 
     --radius: 0.5rem;
 
     /* Custom shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(215 25% 15% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(215 25% 15% / 0.1);
-    --shadow-lg: 0 10px 15px -3px hsl(215 25% 15% / 0.1);
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.2);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.3);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.3);
 
-    --sidebar-background: 0 0% 98%;
+    /* Sidebar - Morado corporativo */
+    --sidebar-background: 250 46% 26%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 250 46% 26%;
+    --sidebar-accent: 250 46% 35%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 250 46% 35%;
+    --sidebar-ring: 250 40% 59%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    /* Tokens específicos Vespucio Norte */
+    --vn-purple: 250 46% 26%;
+    --vn-purple-light: 250 40% 59%;
+    --vn-orange: 29 83% 42%;
+    --vn-turquoise: 191 85% 42%;
+    --vn-dark: 240 4% 12%;
+    --vn-card: 240 4% 17%;
 
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Header tablas - Naranjo */
+    --table-header: 29 83% 42%;
+    --table-header-foreground: 0 0% 100%;
   }
 
-  .dark {
-    --background: 215 30% 10%;
-    --foreground: 0 0% 98%;
-
-    --card: 215 30% 12%;
-    --card-foreground: 0 0% 98%;
-
-    --popover: 215 30% 12%;
-    --popover-foreground: 0 0% 98%;
-
-    --primary: 210 85% 55%;
-    --primary-foreground: 0 0% 100%;
-    --primary-hover: 210 85% 48%;
-
-    --secondary: 215 25% 20%;
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 215 25% 18%;
-    --muted-foreground: 215 15% 65%;
-
-    --accent: 155 65% 50%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 75% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --warning: 38 92% 55%;
-    --warning-foreground: 0 0% 100%;
-
-    --success: 142 76% 42%;
-    --success-foreground: 0 0% 100%;
-
-    --border: 215 25% 22%;
-    --input: 215 25% 20%;
-    --ring: 210 85% 55%;
-    --sidebar-background: 215 30% 12%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 210 85% 55%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 25% 18%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 215 25% 20%;
-    --sidebar-ring: 210 85% 55%;
+  /* Light mode - Enterprise dark theme is default, no light mode needed */
+  .light {
+    /* Keep same as dark for enterprise consistency */
   }
 }
 
@@ -143,11 +124,11 @@ All colors MUST be HSL.
 
 @layer utilities {
   .shadow-notion {
-    box-shadow: 0 1px 3px hsl(215 25% 15% / 0.1), 0 1px 2px hsl(215 25% 15% / 0.06);
+    box-shadow: 0 1px 3px hsl(0 0% 0% / 0.2), 0 1px 2px hsl(0 0% 0% / 0.15);
   }
 
   .shadow-notion-hover {
-    box-shadow: 0 4px 8px hsl(215 25% 15% / 0.12), 0 2px 4px hsl(215 25% 15% / 0.08);
+    box-shadow: 0 4px 8px hsl(0 0% 0% / 0.25), 0 2px 4px hsl(0 0% 0% / 0.15);
   }
 
   .transition-smooth {
@@ -158,9 +139,22 @@ All colors MUST be HSL.
     transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
+  /* Enterprise glass effect - subtle */
   .glass-effect {
-    background: hsl(var(--card) / 0.8);
-    backdrop-filter: blur(12px);
-    border: 1px solid hsl(var(--border) / 0.5);
+    background: hsl(var(--card) / 0.95);
+    backdrop-filter: blur(8px);
+    border: 1px solid hsl(var(--border));
+  }
+
+  /* Table header styling - Naranjo corporativo */
+  .table-header-vn {
+    background-color: hsl(var(--vn-orange));
+    color: hsl(0 0% 100%);
+  }
+
+  /* Selected row - Morado secundario */
+  .row-selected {
+    border-left: 3px solid hsl(var(--vn-purple-light));
+    background-color: hsl(var(--vn-purple) / 0.1);
   }
 }

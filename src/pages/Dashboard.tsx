@@ -20,27 +20,28 @@ export default function Dashboard() {
       
       <main className="flex-1 p-6 space-y-6">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Dashboard Principal</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-secondary">Dashboard Principal</h2>
           <p className="text-muted-foreground mt-1">
             Visión general del sistema de mantenimiento eléctrico
           </p>
         </div>
 
+        {/* KPI Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="shadow-notion hover:shadow-notion-hover transition-smooth">
+          <Card className="shadow-notion hover:shadow-notion-hover transition-smooth border-border">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Total Equipos
               </CardTitle>
-              <TrendingUp className="h-4 w-4 text-primary" />
+              <TrendingUp className="h-4 w-4 text-accent" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">48</div>
+              <div className="text-2xl font-bold text-foreground">48</div>
               <p className="text-xs text-muted-foreground mt-1">+4 este mes</p>
             </CardContent>
           </Card>
 
-          <Card className="shadow-notion hover:shadow-notion-hover transition-smooth">
+          <Card className="shadow-notion hover:shadow-notion-hover transition-smooth border-border">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Mantenimientos Activos
@@ -48,12 +49,12 @@ export default function Dashboard() {
               <Clock className="h-4 w-4 text-warning" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">12</div>
+              <div className="text-2xl font-bold text-foreground">12</div>
               <p className="text-xs text-muted-foreground mt-1">En progreso</p>
             </CardContent>
           </Card>
 
-          <Card className="shadow-notion hover:shadow-notion-hover transition-smooth">
+          <Card className="shadow-notion hover:shadow-notion-hover transition-smooth border-border">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Completados (Mes)
@@ -61,12 +62,12 @@ export default function Dashboard() {
               <CheckCircle2 className="h-4 w-4 text-success" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">87</div>
+              <div className="text-2xl font-bold text-foreground">87</div>
               <p className="text-xs text-muted-foreground mt-1">+15% vs mes anterior</p>
             </CardContent>
           </Card>
 
-          <Card className="shadow-notion hover:shadow-notion-hover transition-smooth">
+          <Card className="shadow-notion hover:shadow-notion-hover transition-smooth border-border">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Alertas Críticas
@@ -74,24 +75,25 @@ export default function Dashboard() {
               <AlertTriangle className="h-4 w-4 text-destructive" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">3</div>
+              <div className="text-2xl font-bold text-foreground">3</div>
               <p className="text-xs text-muted-foreground mt-1">Requieren atención</p>
             </CardContent>
           </Card>
         </div>
 
+        {/* Module Cards */}
         <div>
-          <h3 className="text-xl font-semibold mb-4">Módulos del Sistema</h3>
+          <h3 className="text-xl font-semibold mb-4 text-secondary">Módulos del Sistema</h3>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Link to="/planificacion">
-              <Card className="shadow-notion hover:shadow-notion-hover transition-smooth cursor-pointer border-primary/20 hover:border-primary/40 h-full group">
+              <Card className="shadow-notion hover:shadow-notion-hover transition-smooth cursor-pointer border-warning/30 hover:border-warning h-full group">
                 <CardHeader>
                   <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-smooth group-hover:bg-primary/20">
-                      <Calendar className="h-6 w-6 text-primary" />
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-warning/10 transition-smooth group-hover:bg-warning/20">
+                      <Calendar className="h-6 w-6 text-warning" />
                     </div>
                     <div>
-                      <CardTitle className="text-base">Planificación</CardTitle>
+                      <CardTitle className="text-base text-foreground">Planificación</CardTitle>
                       <p className="text-sm text-muted-foreground">
                         Gestión de planes
                       </p>
@@ -102,7 +104,7 @@ export default function Dashboard() {
                   <p className="text-sm text-muted-foreground">
                     Crea y administra planes de mantenimiento preventivo y correctivo
                   </p>
-                  <Button variant="link" className="mt-2 px-0 h-auto">
+                  <Button variant="link" className="mt-2 px-0 h-auto text-warning">
                     Acceder al módulo →
                   </Button>
                 </CardContent>
@@ -110,14 +112,14 @@ export default function Dashboard() {
             </Link>
 
             <Link to="/ejecucion">
-              <Card className="shadow-notion hover:shadow-notion-hover transition-smooth cursor-pointer border-accent/20 hover:border-accent/40 h-full group">
+              <Card className="shadow-notion hover:shadow-notion-hover transition-smooth cursor-pointer border-accent/30 hover:border-accent h-full group">
                 <CardHeader>
                   <div className="flex items-center gap-3">
                     <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent/10 transition-smooth group-hover:bg-accent/20">
                       <ClipboardCheck className="h-6 w-6 text-accent" />
                     </div>
                     <div>
-                      <CardTitle className="text-base">Ejecución</CardTitle>
+                      <CardTitle className="text-base text-foreground">Ejecución</CardTitle>
                       <p className="text-sm text-muted-foreground">
                         Órdenes de trabajo
                       </p>
@@ -128,7 +130,7 @@ export default function Dashboard() {
                   <p className="text-sm text-muted-foreground">
                     Ejecuta y registra actividades de mantenimiento en tiempo real
                   </p>
-                  <Button variant="link" className="mt-2 px-0 h-auto">
+                  <Button variant="link" className="mt-2 px-0 h-auto text-warning">
                     Acceder al módulo →
                   </Button>
                 </CardContent>
@@ -136,14 +138,14 @@ export default function Dashboard() {
             </Link>
 
             <Link to="/seguimiento">
-              <Card className="shadow-notion hover:shadow-notion-hover transition-smooth cursor-pointer border-warning/20 hover:border-warning/40 h-full group">
+              <Card className="shadow-notion hover:shadow-notion-hover transition-smooth cursor-pointer border-secondary/30 hover:border-secondary h-full group">
                 <CardHeader>
                   <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-warning/10 transition-smooth group-hover:bg-warning/20">
-                      <Activity className="h-6 w-6 text-warning" />
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-secondary/10 transition-smooth group-hover:bg-secondary/20">
+                      <Activity className="h-6 w-6 text-secondary" />
                     </div>
                     <div>
-                      <CardTitle className="text-base">Control y Seguimiento</CardTitle>
+                      <CardTitle className="text-base text-foreground">Control y Seguimiento</CardTitle>
                       <p className="text-sm text-muted-foreground">
                         KPIs y monitoreo
                       </p>
@@ -154,7 +156,7 @@ export default function Dashboard() {
                   <p className="text-sm text-muted-foreground">
                     Monitorea el desempeño y controla las operaciones de mantenimiento
                   </p>
-                  <Button variant="link" className="mt-2 px-0 h-auto">
+                  <Button variant="link" className="mt-2 px-0 h-auto text-warning">
                     Acceder al módulo →
                   </Button>
                 </CardContent>
@@ -162,14 +164,14 @@ export default function Dashboard() {
             </Link>
 
             <Link to="/reportes">
-              <Card className="shadow-notion hover:shadow-notion-hover transition-smooth cursor-pointer border-destructive/20 hover:border-destructive/40 h-full group">
+              <Card className="shadow-notion hover:shadow-notion-hover transition-smooth cursor-pointer border-secondary/30 hover:border-secondary h-full group">
                 <CardHeader>
                   <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-destructive/10 transition-smooth group-hover:bg-destructive/20">
-                      <BarChart3 className="h-6 w-6 text-destructive" />
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-secondary/10 transition-smooth group-hover:bg-secondary/20">
+                      <BarChart3 className="h-6 w-6 text-secondary" />
                     </div>
                     <div>
-                      <CardTitle className="text-base">Reportes y Analytics</CardTitle>
+                      <CardTitle className="text-base text-foreground">Reportes y Analytics</CardTitle>
                       <p className="text-sm text-muted-foreground">
                         Análisis y métricas
                       </p>
@@ -180,7 +182,7 @@ export default function Dashboard() {
                   <p className="text-sm text-muted-foreground">
                     Visualiza indicadores y genera reportes de desempeño
                   </p>
-                  <Button variant="link" className="mt-2 px-0 h-auto">
+                  <Button variant="link" className="mt-2 px-0 h-auto text-warning">
                     Acceder al módulo →
                   </Button>
                 </CardContent>
@@ -189,9 +191,10 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <Card className="shadow-notion">
+        {/* Recent Activity */}
+        <Card className="shadow-notion border-border">
           <CardHeader>
-            <CardTitle className="text-xl">Actividad Reciente</CardTitle>
+            <CardTitle className="text-xl text-secondary">Actividad Reciente</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -215,14 +218,14 @@ export default function Dashboard() {
                   type: "success",
                 },
               ].map((activity, i) => (
-                <div key={i} className="flex items-start gap-3 pb-4 border-b last:border-0 transition-fast hover:bg-muted/30 -mx-2 px-2 rounded-md">
+                <div key={i} className="flex items-start gap-3 pb-4 border-b border-border last:border-0 transition-fast hover:bg-muted/30 -mx-2 px-2 rounded-md">
                   <div
                     className={`mt-1 h-2 w-2 rounded-full ${
                       activity.type === "success" ? "bg-success" : "bg-warning"
                     }`}
                   />
                   <div className="flex-1">
-                    <p className="font-medium">{activity.action}</p>
+                    <p className="font-medium text-foreground">{activity.action}</p>
                     <p className="text-sm text-muted-foreground">
                       {activity.description}
                     </p>

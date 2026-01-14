@@ -48,6 +48,10 @@ export default {
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",
         },
+        info: {
+          DEFAULT: "hsl(var(--info))",
+          foreground: "hsl(var(--info-foreground))",
+        },
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
@@ -66,6 +70,15 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // Vespucio Norte corporate tokens
+        "vn-purple": "hsl(var(--vn-purple))",
+        "vn-purple-light": "hsl(var(--vn-purple-light))",
+        "vn-orange": "hsl(var(--vn-orange))",
+        "vn-turquoise": "hsl(var(--vn-turquoise))",
+        "vn-dark": "hsl(var(--vn-dark))",
+        "vn-card": "hsl(var(--vn-card))",
+        "table-header": "hsl(var(--table-header))",
+        "table-header-foreground": "hsl(var(--table-header-foreground))",
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],

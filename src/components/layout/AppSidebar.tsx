@@ -22,6 +22,7 @@ import {
   SidebarHeader,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { VespucioLogo } from "./VespucioLogo";
 
 const mainModules = [
   { title: "Dashboard", url: "/", icon: Home },
@@ -45,28 +46,16 @@ export function AppSidebar() {
   const { open } = useSidebar();
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarHeader className="border-b border-sidebar-border p-4">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <Wrench className="h-5 w-5 text-primary-foreground" />
-          </div>
-          {open && (
-            <div className="flex flex-col">
-              <span className="text-sm font-semibold text-sidebar-foreground">
-                SGME
-              </span>
-              <span className="text-xs text-muted-foreground">
-                Sistema de Mantenimiento
-              </span>
-            </div>
-          )}
-        </div>
+        <VespucioLogo collapsed={!open} />
       </SidebarHeader>
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Módulos Principales</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-white/60 text-xs uppercase tracking-wider">
+            Módulos Principales
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainModules.map((item) => (
@@ -76,12 +65,14 @@ export function AppSidebar() {
                       to={item.url}
                       end={item.url === "/"}
                       className={({ isActive }) =>
-                        isActive
-                          ? "bg-sidebar-accent text-sidebar-primary"
-                          : "hover:bg-sidebar-accent/50"
+                        `flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-fast ${
+                          isActive
+                            ? "bg-sidebar-accent text-white font-medium"
+                            : "text-white/80 hover:bg-sidebar-accent/50 hover:text-white"
+                        }`
                       }
                     >
-                      <item.icon className="h-4 w-4" />
+                      <item.icon className="h-4 w-4 shrink-0" />
                       <span>{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
@@ -92,7 +83,9 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Recursos</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-white/60 text-xs uppercase tracking-wider">
+            Recursos
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {resources.map((item) => (
@@ -101,12 +94,14 @@ export function AppSidebar() {
                     <NavLink
                       to={item.url}
                       className={({ isActive }) =>
-                        isActive
-                          ? "bg-sidebar-accent text-sidebar-primary"
-                          : "hover:bg-sidebar-accent/50"
+                        `flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-fast ${
+                          isActive
+                            ? "bg-sidebar-accent text-white font-medium"
+                            : "text-white/80 hover:bg-sidebar-accent/50 hover:text-white"
+                        }`
                       }
                     >
-                      <item.icon className="h-4 w-4" />
+                      <item.icon className="h-4 w-4 shrink-0" />
                       <span>{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
@@ -117,7 +112,9 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Sistema</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-white/60 text-xs uppercase tracking-wider">
+            Sistema
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {system.map((item) => (
@@ -126,12 +123,14 @@ export function AppSidebar() {
                     <NavLink
                       to={item.url}
                       className={({ isActive }) =>
-                        isActive
-                          ? "bg-sidebar-accent text-sidebar-primary"
-                          : "hover:bg-sidebar-accent/50"
+                        `flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-fast ${
+                          isActive
+                            ? "bg-sidebar-accent text-white font-medium"
+                            : "text-white/80 hover:bg-sidebar-accent/50 hover:text-white"
+                        }`
                       }
                     >
-                      <item.icon className="h-4 w-4" />
+                      <item.icon className="h-4 w-4 shrink-0" />
                       <span>{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
