@@ -577,7 +577,7 @@ export function WorkOrderDetail({ orderId, onClose }: WorkOrderDetailProps) {
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="space-y-6">
           <ChecklistForm orderId={orderId} />
-          <PhotoCapture />
+          <PhotoCapture orderId={orderId} />
         </div>
 
         <div>

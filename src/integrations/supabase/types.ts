@@ -587,6 +587,41 @@ export type Database = {
           },
         ]
       }
+      ordenes_trabajo_fotos: {
+        Row: {
+          caption: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          orden_id: string
+          storage_path: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          orden_id: string
+          storage_path: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          orden_id?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ordenes_trabajo_fotos_orden_id_fkey"
+            columns: ["orden_id"]
+            isOneToOne: false
+            referencedRelation: "ordenes_trabajo"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ordenes_trabajo_historial: {
         Row: {
           accion: string
