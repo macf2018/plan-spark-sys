@@ -208,6 +208,77 @@ export type Database = {
         }
         Relationships: []
       }
+      checklist_plantilla_items: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          item_key: string
+          orden: number | null
+          plantilla_id: string
+          required: boolean | null
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          item_key: string
+          orden?: number | null
+          plantilla_id: string
+          required?: boolean | null
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          item_key?: string
+          orden?: number | null
+          plantilla_id?: string
+          required?: boolean | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_plantilla_items_plantilla_id_fkey"
+            columns: ["plantilla_id"]
+            isOneToOne: false
+            referencedRelation: "checklist_plantillas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      checklist_plantillas: {
+        Row: {
+          activo: boolean | null
+          code: string
+          created_at: string | null
+          descripcion: string | null
+          id: string
+          tipo_equipo: string
+          updated_at: string | null
+        }
+        Insert: {
+          activo?: boolean | null
+          code: string
+          created_at?: string | null
+          descripcion?: string | null
+          id?: string
+          tipo_equipo: string
+          updated_at?: string | null
+        }
+        Update: {
+          activo?: boolean | null
+          code?: string
+          created_at?: string | null
+          descripcion?: string | null
+          id?: string
+          tipo_equipo?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       equipos: {
         Row: {
           anio_fabricacion: number | null
@@ -234,6 +305,7 @@ export type Database = {
           shelter_id: string | null
           tecnico_responsable_estado: string | null
           tipo: Database["public"]["Enums"]["tipo_equipo"]
+          tipo_equipo: string | null
           tramo_id: string | null
           ubicacion_fisica: string | null
           updated_at: string | null
@@ -266,6 +338,7 @@ export type Database = {
           shelter_id?: string | null
           tecnico_responsable_estado?: string | null
           tipo: Database["public"]["Enums"]["tipo_equipo"]
+          tipo_equipo?: string | null
           tramo_id?: string | null
           ubicacion_fisica?: string | null
           updated_at?: string | null
@@ -298,6 +371,7 @@ export type Database = {
           shelter_id?: string | null
           tecnico_responsable_estado?: string | null
           tipo?: Database["public"]["Enums"]["tipo_equipo"]
+          tipo_equipo?: string | null
           tramo_id?: string | null
           ubicacion_fisica?: string | null
           updated_at?: string | null
@@ -457,6 +531,7 @@ export type Database = {
           created_by: string | null
           criticidad: string | null
           descripcion_trabajo: string | null
+          equipo_id: string | null
           estado: string | null
           fecha_fin: string | null
           fecha_inicio: string | null
@@ -481,6 +556,7 @@ export type Database = {
           created_by?: string | null
           criticidad?: string | null
           descripcion_trabajo?: string | null
+          equipo_id?: string | null
           estado?: string | null
           fecha_fin?: string | null
           fecha_inicio?: string | null
@@ -505,6 +581,7 @@ export type Database = {
           created_by?: string | null
           criticidad?: string | null
           descripcion_trabajo?: string | null
+          equipo_id?: string | null
           estado?: string | null
           fecha_fin?: string | null
           fecha_inicio?: string | null
@@ -525,6 +602,13 @@ export type Database = {
           ventana_horaria?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "ordenes_trabajo_equipo_id_fkey"
+            columns: ["equipo_id"]
+            isOneToOne: false
+            referencedRelation: "equipos"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "ordenes_trabajo_id_plan_linea_fkey"
             columns: ["id_plan_linea"]
@@ -814,6 +898,7 @@ export type Database = {
           created_at: string | null
           criticidad: string | null
           descripcion_trabajo: string | null
+          equipo_id: string | null
           estado_plan: string | null
           fecha_carga: string | null
           fecha_programada: string
@@ -837,6 +922,7 @@ export type Database = {
           created_at?: string | null
           criticidad?: string | null
           descripcion_trabajo?: string | null
+          equipo_id?: string | null
           estado_plan?: string | null
           fecha_carga?: string | null
           fecha_programada: string
@@ -860,6 +946,7 @@ export type Database = {
           created_at?: string | null
           criticidad?: string | null
           descripcion_trabajo?: string | null
+          equipo_id?: string | null
           estado_plan?: string | null
           fecha_carga?: string | null
           fecha_programada?: string
@@ -878,7 +965,15 @@ export type Database = {
           usuario_carga?: string | null
           ventana_horaria?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "plan_anual_lineas_equipo_id_fkey"
+            columns: ["equipo_id"]
+            isOneToOne: false
+            referencedRelation: "equipos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       plan_anual_logs: {
         Row: {
