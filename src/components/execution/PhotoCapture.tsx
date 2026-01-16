@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Camera, Upload, X, Image as ImageIcon, Loader2 } from "lucide-react";
+import { Camera, Upload, X, Image as ImageIcon, Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -18,6 +18,12 @@ interface Photo {
 interface PhotoCaptureProps {
   orderId: string;
 }
+
+// Constantes de validación
+const ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png", "pdf"];
+const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "application/pdf"];
+const MAX_FILE_SIZE_MB = 2;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 export function PhotoCapture({ orderId }: PhotoCaptureProps) {
   const [photos, setPhotos] = useState<Photo[]>([]);
@@ -66,12 +72,52 @@ export function PhotoCapture({ orderId }: PhotoCaptureProps) {
     }
   };
 
+  const validateFile = (file: File): { valid: boolean; error?: string } => {
+    // Validar tamaño
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      return {
+        valid: false,
+        error: `El archivo excede el tamaño máximo permitido (${MAX_FILE_SIZE_MB} MB).`,
+      };
+    }
+
+    // Validar tipo MIME
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+      return {
+        valid: false,
+        error: `Formato no permitido. Use: ${ALLOWED_EXTENSIONS.join(", ").toUpperCase()}`,
+      };
+    }
+
+    // Validar extensión
+    const ext = file.name.split(".").pop()?.toLowerCase();
+    if (!ext || !ALLOWED_EXTENSIONS.includes(ext)) {
+      return {
+        valid: false,
+        error: `Extensión no permitida. Use: ${ALLOWED_EXTENSIONS.join(", ").toUpperCase()}`,
+      };
+    }
+
+    return { valid: true };
+  };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
     const file = files[0];
-    const fileExt = file.name.split(".").pop();
+
+    // Validar archivo
+    const validation = validateFile(file);
+    if (!validation.valid) {
+      toast.error(validation.error, {
+        icon: <AlertTriangle className="h-5 w-5 text-warning" />,
+      });
+      event.target.value = "";
+      return;
+    }
+
+    const fileExt = file.name.split(".").pop()?.toLowerCase();
     const fileName = `${orderId}/${Date.now()}.${fileExt}`;
 
     try {
@@ -120,10 +166,10 @@ export function PhotoCapture({ orderId }: PhotoCaptureProps) {
 
       setPhotos([newPhoto, ...photos]);
       setCaption("");
-      toast.success("Foto agregada correctamente");
+      toast.success("Archivo guardado correctamente.");
     } catch (error: any) {
       console.error("Error uploading photo:", error);
-      toast.error(error.message || "Error al subir foto");
+      toast.error("No se pudo subir el archivo. Verifique conexión e inténtelo nuevamente.");
     } finally {
       setUploading(false);
       // Reset input
@@ -158,6 +204,8 @@ export function PhotoCapture({ orderId }: PhotoCaptureProps) {
     }
   };
 
+  const acceptTypes = ALLOWED_EXTENSIONS.map((ext) => `.${ext}`).join(",");
+
   return (
     <Card className="shadow-notion">
       <CardHeader>
@@ -165,6 +213,9 @@ export function PhotoCapture({ orderId }: PhotoCaptureProps) {
           <Camera className="h-5 w-5" />
           Registro Fotográfico
         </CardTitle>
+        <p className="text-xs text-muted-foreground">
+          Formatos: JPG, PNG, PDF · Máx: {MAX_FILE_SIZE_MB} MB
+        </p>
       </CardHeader>
 
       <CardContent className="space-y-4">
@@ -207,10 +258,10 @@ export function PhotoCapture({ orderId }: PhotoCaptureProps) {
                 ) : (
                   <Upload className="mr-2 h-4 w-4" />
                 )}
-                Subir Imagen
+                Subir Archivo
                 <input
                   type="file"
-                  accept="image/*"
+                  accept={acceptTypes}
                   className="hidden"
                   onChange={handleFileUpload}
                   disabled={uploading}
@@ -248,11 +299,20 @@ export function PhotoCapture({ orderId }: PhotoCaptureProps) {
                   key={photo.id}
                   className="relative group rounded-lg overflow-hidden border bg-muted"
                 >
-                  <img
-                    src={photo.url}
-                    alt={photo.caption}
-                    className="w-full h-40 object-cover"
-                  />
+                  {photo.storagePath.endsWith(".pdf") ? (
+                    <div className="w-full h-40 flex items-center justify-center bg-muted">
+                      <div className="text-center">
+                        <ImageIcon className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+                        <p className="text-xs text-muted-foreground">PDF</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <img
+                      src={photo.url}
+                      alt={photo.caption}
+                      className="w-full h-40 object-cover"
+                    />
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-smooth">
                     <Button
                       variant="destructive"
