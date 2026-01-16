@@ -22,7 +22,7 @@ interface ChecklistFormProps {
   orderId: string;
 }
 
-// Default checklist template
+// Plantilla genérica de respaldo (si no hay equipo vinculado o tipo_equipo)
 const DEFAULT_CHECKLIST: Omit<ChecklistItem, "id">[] = [
   {
     item_key: "inspeccion_visual",
@@ -72,6 +72,93 @@ export function ChecklistForm({ orderId }: ChecklistFormProps) {
   const [items, setItems] = useState<ChecklistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [tipoEquipo, setTipoEquipo] = useState<string | null>(null);
+
+  // Obtener plantilla por tipo_equipo desde la base de datos
+  const getTemplateByTipoEquipo = useCallback(async (tipo: string): Promise<Omit<ChecklistItem, "id">[]> => {
+    try {
+      // Buscar la plantilla
+      const { data: plantilla, error: plantillaError } = await supabase
+        .from("checklist_plantillas")
+        .select("id, tipo_equipo")
+        .eq("tipo_equipo", tipo)
+        .eq("activo", true)
+        .maybeSingle();
+
+      if (plantillaError || !plantilla) {
+        console.log("No se encontró plantilla para tipo:", tipo);
+        return DEFAULT_CHECKLIST;
+      }
+
+      // Buscar los items de la plantilla
+      const { data: templateItems, error: itemsError } = await supabase
+        .from("checklist_plantilla_items")
+        .select("item_key, title, description, required, orden")
+        .eq("plantilla_id", plantilla.id)
+        .order("orden", { ascending: true });
+
+      if (itemsError || !templateItems || templateItems.length === 0) {
+        console.log("No se encontraron items para plantilla:", plantilla.id);
+        return DEFAULT_CHECKLIST;
+      }
+
+      return templateItems.map((item) => ({
+        item_key: item.item_key,
+        title: item.title,
+        description: item.description || "",
+        required: item.required,
+        completed: false,
+      }));
+    } catch (err) {
+      console.error("Error obteniendo plantilla:", err);
+      return DEFAULT_CHECKLIST;
+    }
+  }, []);
+
+  // Obtener el tipo_equipo desde la OT o el equipo vinculado
+  const getTipoEquipoFromOT = useCallback(async (): Promise<string | null> => {
+    try {
+      // Primero obtener la OT con equipo_id
+      const { data: ot, error: otError } = await supabase
+        .from("ordenes_trabajo")
+        .select("tipo_equipo, equipo_id")
+        .eq("id", orderId)
+        .maybeSingle();
+
+      if (otError || !ot) return null;
+
+      // Si hay equipo vinculado, obtener su tipo_equipo
+      if (ot.equipo_id) {
+        const { data: equipo, error: equipoError } = await supabase
+          .from("equipos")
+          .select("tipo_equipo")
+          .eq("id", ot.equipo_id)
+          .maybeSingle();
+
+        if (!equipoError && equipo?.tipo_equipo) {
+          return equipo.tipo_equipo;
+        }
+      }
+
+      // Fallback: usar tipo_equipo de la OT (campo texto heredado)
+      // Mapear valores conocidos
+      const tipoOT = ot.tipo_equipo?.toLowerCase() || "";
+      if (tipoOT.includes("centro") || tipoOT.includes("transformacion") || tipoOT.includes("ct")) {
+        return "Centro de Transformacion";
+      }
+      if (tipoOT.includes("shelter") || tipoOT.includes("sala")) {
+        return "Salas electricas y tecnica (Shelter)";
+      }
+      if (tipoOT.includes("generador") || tipoOT.includes("grupo")) {
+        return "Grupos Generadores";
+      }
+
+      return null;
+    } catch (err) {
+      console.error("Error obteniendo tipo_equipo de OT:", err);
+      return null;
+    }
+  }, [orderId]);
 
   // Load checklist from DB
   const loadChecklist = useCallback(async () => {
@@ -84,7 +171,7 @@ export function ChecklistForm({ orderId }: ChecklistFormProps) {
       if (error) throw error;
 
       if (data && data.length > 0) {
-        // Map DB data to component format
+        // Ya existe checklist para esta OT - usar los items existentes
         setItems(
           data.map((row) => ({
             id: row.id,
@@ -97,17 +184,20 @@ export function ChecklistForm({ orderId }: ChecklistFormProps) {
           }))
         );
       } else {
-        // Initialize with default checklist for this order
-        const initialItems: ChecklistItem[] = DEFAULT_CHECKLIST.map(
-          (item, index) => ({
-            ...item,
-            id: `temp-${index}`,
-          })
-        );
+        // No existe checklist - inicializar con plantilla según tipo_equipo
+        const tipo = await getTipoEquipoFromOT();
+        setTipoEquipo(tipo);
+
+        const template = tipo ? await getTemplateByTipoEquipo(tipo) : DEFAULT_CHECKLIST;
+        
+        const initialItems: ChecklistItem[] = template.map((item, index) => ({
+          ...item,
+          id: `temp-${index}`,
+        }));
         setItems(initialItems);
 
         // Insert defaults into DB
-        const inserts = DEFAULT_CHECKLIST.map((item) => ({
+        const inserts = template.map((item) => ({
           orden_id: orderId,
           item_key: item.item_key,
           title: item.title,
@@ -144,7 +234,7 @@ export function ChecklistForm({ orderId }: ChecklistFormProps) {
     } finally {
       setLoading(false);
     }
-  }, [orderId]);
+  }, [orderId, getTipoEquipoFromOT, getTemplateByTipoEquipo]);
 
   useEffect(() => {
     loadChecklist();
@@ -245,6 +335,11 @@ export function ChecklistForm({ orderId }: ChecklistFormProps) {
             </Badge>
           </div>
         </div>
+        {tipoEquipo && (
+          <p className="text-xs text-muted-foreground mt-1">
+            Plantilla: {tipoEquipo}
+          </p>
+        )}
         <div className="mt-4 space-y-2">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Progreso General</span>
