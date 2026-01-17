@@ -12,13 +12,16 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { VespucioLogo } from "./VespucioLogo";
 
 interface HeaderProps {
   title: string;
   showNavigation?: boolean;
 }
 
+/**
+ * Header principal de la aplicación.
+ * NOTA: El logo se muestra SOLO en el sidebar para evitar duplicación.
+ */
 export function Header({ title, showNavigation = false }: HeaderProps) {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
@@ -35,11 +38,7 @@ export function Header({ title, showNavigation = false }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-border bg-primary px-4 shadow-md">
-      {/* Logo corporativo - siempre visible */}
-      <VespucioLogo collapsed={false} />
-      
-      <div className="h-8 w-px bg-white/20" />
-      
+      {/* SidebarTrigger - único control de navegación del sidebar */}
       <SidebarTrigger className="transition-fast text-white hover:bg-white/10" />
       
       {showNavigation && (
