@@ -14,6 +14,8 @@ import Monitoring from "./pages/Monitoring";
 import Reports from "./pages/Reports";
 import Equipment from "./pages/Equipment";
 import Personal from "./pages/Personal";
+import Materials from "./pages/Materials";
+import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -28,6 +30,18 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => (
   </SidebarProvider>
 );
 
+/**
+ * Wrapper con ErrorBoundary para cada ruta protegida.
+ * Esto asegura que errores en cualquier módulo muestren el ErrorFallback.
+ */
+const ProtectedRouteWithError = ({ children }: { children: React.ReactNode }) => (
+  <ErrorBoundary>
+    <ProtectedRoute>
+      <AppLayout>{children}</AppLayout>
+    </ProtectedRoute>
+  </ErrorBoundary>
+);
+
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
@@ -40,73 +54,76 @@ const App = () => (
             <Route
               path="/"
               element={
-                <ProtectedRoute>
-                  <AppLayout>
-                    <Dashboard />
-                  </AppLayout>
-                </ProtectedRoute>
+                <ProtectedRouteWithError>
+                  <Dashboard />
+                </ProtectedRouteWithError>
               }
             />
             <Route
               path="/planificacion"
               element={
-                <ProtectedRoute>
-                  <AppLayout>
-                    <Planning />
-                  </AppLayout>
-                </ProtectedRoute>
+                <ProtectedRouteWithError>
+                  <Planning />
+                </ProtectedRouteWithError>
               }
             />
             <Route
               path="/ejecucion"
               element={
-                <ProtectedRoute>
-                  <AppLayout>
-                    <Execution />
-                  </AppLayout>
-                </ProtectedRoute>
+                <ProtectedRouteWithError>
+                  <Execution />
+                </ProtectedRouteWithError>
               }
             />
             <Route
               path="/seguimiento"
               element={
-                <ProtectedRoute>
-                  <AppLayout>
-                    <Monitoring />
-                  </AppLayout>
-                </ProtectedRoute>
+                <ProtectedRouteWithError>
+                  <Monitoring />
+                </ProtectedRouteWithError>
               }
             />
             <Route
               path="/reportes"
               element={
-                <ProtectedRoute>
-                  <AppLayout>
-                    <Reports />
-                  </AppLayout>
-                </ProtectedRoute>
+                <ProtectedRouteWithError>
+                  <Reports />
+                </ProtectedRouteWithError>
               }
             />
             <Route
               path="/equipos"
               element={
-                <ProtectedRoute>
-                  <AppLayout>
-                    <Equipment />
-                  </AppLayout>
-                </ProtectedRoute>
+                <ProtectedRouteWithError>
+                  <Equipment />
+                </ProtectedRouteWithError>
               }
             />
             <Route
               path="/personal"
               element={
-                <ProtectedRoute>
-                  <AppLayout>
-                    <Personal />
-                  </AppLayout>
-                </ProtectedRoute>
+                <ProtectedRouteWithError>
+                  <Personal />
+                </ProtectedRouteWithError>
               }
             />
+            <Route
+              path="/materiales"
+              element={
+                <ProtectedRouteWithError>
+                  <Materials />
+                </ProtectedRouteWithError>
+              }
+            />
+            <Route
+              path="/configuracion"
+              element={
+                <ProtectedRouteWithError>
+                  <Settings />
+                </ProtectedRouteWithError>
+              }
+            />
+            {/* Ruta catch-all para páginas no encontradas */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
