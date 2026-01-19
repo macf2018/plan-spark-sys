@@ -39,13 +39,13 @@ export function VespucioLogo({
     
     // Sidebar
     if (collapsed) {
-      // Sidebar colapsado: tamaño fijo pequeño
-      return "h-8 w-auto object-contain";
+      // Sidebar colapsado: tamaño fijo
+      return "h-12 w-auto object-contain";
     }
     
-    // Sidebar expandido: tamaños aumentados
-    // móvil: 72px, tablet: 64px, desktop: 56px
-    return "h-[72px] sm:h-16 lg:h-14 w-auto object-contain";
+    // Sidebar expandido: tamaños aumentados (triple del original)
+    // móvil: 144px, tablet: 128px, desktop: 112px
+    return "h-36 sm:h-32 lg:h-28 w-auto object-contain";
   };
 
   // En contexto auth: contenedor azul corporativo para coherencia con dashboard
@@ -67,7 +67,7 @@ export function VespucioLogo({
   return (
     <Link 
       to="/" 
-      className={`flex items-center gap-3 transition-fast hover:opacity-80 ${className}`}
+      className={`flex flex-col items-center justify-center gap-2 transition-fast hover:opacity-80 w-full py-4 ${className}`}
       title="Ir al Dashboard - SGME"
     >
       <img
@@ -78,11 +78,11 @@ export function VespucioLogo({
 
       {/* Texto SGME - Solo en modo expandido del sidebar */}
       {!collapsed && (
-        <div className="flex flex-col">
-          <span className="text-sm font-semibold text-white tracking-wide">
+        <div className="flex flex-col items-center text-center">
+          <span className="text-base font-semibold text-white tracking-wide">
             SGME
           </span>
-          <span className="text-[10px] text-white/60 leading-tight">
+          <span className="text-xs text-white/60 leading-tight">
             Mantenimiento
           </span>
         </div>
