@@ -447,10 +447,10 @@ export default function Auth() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md shadow-lg border-border">
-        <CardHeader className="text-center space-y-4">
-          {/* Logo corporativo en login */}
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-xl bg-primary">
-            <VespucioLogo collapsed={true} className="justify-center" />
+        <CardHeader className="text-center space-y-6 pb-4">
+          {/* Logo corporativo protagonista - responsive */}
+          <div className="mx-auto py-4">
+            <VespucioLogo context="auth" />
           </div>
           <div>
             <CardTitle className="text-2xl text-foreground">{content.title}</CardTitle>
