@@ -43,20 +43,22 @@ export function VespucioLogo({
       return "h-8 w-auto object-contain";
     }
     
-    // Sidebar expandido: responsive inverso (más grande en móvil, más pequeño en desktop)
-    // móvil: 64px, tablet: 56px, desktop: 48px
-    return "h-16 sm:h-14 lg:h-12 w-auto object-contain";
+    // Sidebar expandido: tamaños aumentados
+    // móvil: 72px, tablet: 64px, desktop: 56px
+    return "h-[72px] sm:h-16 lg:h-14 w-auto object-contain";
   };
 
-  // En contexto auth, no es clickable (ya estamos en auth)
+  // En contexto auth: contenedor azul corporativo para coherencia con dashboard
   if (context === "auth") {
     return (
       <div className={`flex items-center justify-center ${className}`}>
-        <img
-          src={logoVespucio}
-          alt="Autopista Vespucio Norte"
-          className={getLogoClasses()}
-        />
+        <div className="bg-primary rounded-xl px-8 py-6 sm:px-10 sm:py-8 lg:px-12 lg:py-10">
+          <img
+            src={logoVespucio}
+            alt="Autopista Vespucio Norte"
+            className={getLogoClasses()}
+          />
+        </div>
       </div>
     );
   }
