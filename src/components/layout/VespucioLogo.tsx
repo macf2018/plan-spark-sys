@@ -39,38 +39,33 @@ export function VespucioLogo({
     );
   }
 
-  // Contexto sidebar: clickable hacia dashboard
+  // Contexto sidebar: clickable hacia dashboard - Logo + SGME en UNA LÍNEA
   return (
     <Link 
       to="/" 
-      className={`flex flex-col items-center justify-center gap-3 transition-fast hover:opacity-80 w-full py-5 px-3 ${className}`}
+      className={`flex items-center gap-2 transition-fast hover:opacity-80 w-full px-3 py-3 ${className}`}
       title="Ir al Dashboard - SGME"
     >
-      {/* Contenedor con dimensiones fijas - NUNCA se deforma */}
+      {/* Logo compacto - dimensiones fijas, sin deformación */}
       <div 
         className={`relative flex-shrink-0 ${
           collapsed 
-            ? "h-[40px] w-[40px]" // Colapsado: cuadrado pequeño
-            : "h-[56px] w-[180px] sm:h-[64px] sm:w-[200px] lg:h-[72px] lg:w-[220px]" // Expandido: responsive
+            ? "h-[32px] w-[32px]" 
+            : "h-[36px] w-[100px]"
         }`}
       >
         <img
           src={logoVespucio}
           alt="Autopista Vespucio Norte"
-          className="absolute inset-0 h-full w-full object-contain object-center"
+          className="absolute inset-0 h-full w-full object-contain object-left"
         />
       </div>
 
-      {/* Texto SGME - Solo en modo expandido del sidebar */}
+      {/* Texto SGME - Solo en modo expandido, en la misma línea */}
       {!collapsed && (
-        <div className="flex flex-col items-center text-center gap-0.5">
-          <span className="text-base font-semibold text-white tracking-wide leading-tight">
-            SGME
-          </span>
-          <span className="text-xs text-white/60 leading-tight">
-            Mantenimiento
-          </span>
-        </div>
+        <span className="text-lg font-bold text-white tracking-wide whitespace-nowrap">
+          SGME
+        </span>
       )}
     </Link>
   );
