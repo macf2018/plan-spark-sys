@@ -285,18 +285,18 @@ export default function Execution() {
 
         <Card className="shadow-notion">
           <CardHeader>
-            <div className="flex flex-col gap-4">
-              <CardTitle>Órdenes de Trabajo ({filteredOrders.length} de {totalOrders})</CardTitle>
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="relative w-64">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Buscar órdenes..."
-                    className="pl-8"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
+              <div className="flex flex-col gap-4">
+                <CardTitle>Órdenes de Trabajo ({filteredOrders.length} de {totalOrders})</CardTitle>
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="relative w-full sm:w-64">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Buscar órdenes..."
+                      className="pl-8"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
 
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
                   <SelectTrigger className="w-44">

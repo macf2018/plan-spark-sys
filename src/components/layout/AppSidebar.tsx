@@ -45,11 +45,11 @@ const system = [
 export function AppSidebar() {
   const { open } = useSidebar();
 
-  return (
-    <Sidebar collapsible="icon" className="border-r border-sidebar-border">
-      <SidebarHeader className="border-b border-sidebar-border p-4">
-        <VespucioLogo collapsed={!open} />
-      </SidebarHeader>
+    return (
+    	<Sidebar collapsible="icon" className="border-r border-sidebar-border">
+      	<SidebarHeader className="border-b border-sidebar-border px-4 py-3">
+        	<VespucioLogo collapsed={!open} />
+      	</SidebarHeader>
 
       <SidebarContent>
         <SidebarGroup>

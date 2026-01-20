@@ -18,7 +18,7 @@ export default function Dashboard() {
     <div className="flex min-h-screen flex-col">
       <Header title="Sistema de Gestión de Mantenimiento Eléctrico" />
       
-      <main className="flex-1 p-6 space-y-6">
+      <main className="flex-1 p-4 sm:p-6 space-y-6">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-secondary">Dashboard Principal</h2>
           <p className="text-muted-foreground mt-1">
