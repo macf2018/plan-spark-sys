@@ -192,7 +192,7 @@ export default function Planning() {
     <div className="flex min-h-screen flex-col">
       <Header title="Módulo de Planificación de Mantenimiento" showNavigation />
       
-      <main className="flex-1 p-6 space-y-6">
+      <main className="flex-1 p-4 sm:p-6 space-y-6">
         {/* Sección de Carga de Plan Anual */}
         <Card className="border-primary/20 shadow-lg">
           <CardHeader className="pb-3">
@@ -209,14 +209,14 @@ export default function Planning() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-start gap-6">
-              {/* Botón de carga - TAMAÑO AUMENTADO */}
+            <div className="flex flex-col lg:flex-row lg:items-start gap-4 lg:gap-6">
+              {/* Botón de carga - responsive, sin overflow en móvil */}
               <Button 
                 onClick={() => setIsUploadOpen(true)}
-                className="h-20 px-10 text-lg font-semibold"
+                className="w-full lg:w-auto h-14 sm:h-16 px-6 sm:px-10 text-base sm:text-lg font-semibold"
                 size="lg"
               >
-                <FileSpreadsheet className="mr-3 h-6 w-6" />
+                <FileSpreadsheet className="mr-3 h-5 w-5 sm:h-6 sm:w-6" />
                 Cargar Plan CSV
               </Button>
 
@@ -224,7 +224,7 @@ export default function Planning() {
               {loadingUploadInfo ? (
                 <div className="text-sm text-muted-foreground">Cargando info...</div>
               ) : lastUpload ? (
-                <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/50 rounded-lg">
+                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-muted/50 rounded-lg">
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4 text-muted-foreground" />
                     <div>
@@ -253,9 +253,9 @@ export default function Planning() {
                       <p className="text-sm font-medium">{formatDuration(lastUpload.duracion_carga_ms)}</p>
                     </div>
                   </div>
-                  <div className="col-span-2 md:col-span-4 flex items-center gap-2">
+                  <div className="sm:col-span-2 lg:col-span-4 flex flex-wrap items-center gap-2">
                     <Badge variant="secondary">{lastUpload.total_filas_validas} registros cargados</Badge>
-                    <span className="text-xs text-muted-foreground">Archivo: {lastUpload.nombre_archivo}</span>
+                    <span className="text-xs text-muted-foreground break-all">Archivo: {lastUpload.nombre_archivo}</span>
                   </div>
                 </div>
               ) : (
@@ -273,14 +273,14 @@ export default function Planning() {
         </Card>
 
         {/* Encabezado y acciones */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-2xl font-bold">Planificación de Mantenimiento</h2>
             <p className="text-muted-foreground">
               Gestiona y programa todos los planes de mantenimiento
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" onClick={handleRefresh}>
               <RefreshCw className="mr-2 h-4 w-4" />
               Actualizar

@@ -39,19 +39,19 @@ export function VespucioLogo({
     );
   }
 
-  // Contexto sidebar: clickable hacia dashboard - Logo + SGME en UNA LÍNEA
+  // Contexto sidebar: clickable hacia dashboard - Logo con presencia + SGME en UNA LÍNEA
   return (
     <Link 
       to="/" 
-      className={`flex items-center gap-2 transition-fast hover:opacity-80 w-full px-3 py-3 ${className}`}
+      className={`flex items-center gap-3 transition-fast hover:opacity-80 w-full ${className}`}
       title="Ir al Dashboard - SGME"
     >
-      {/* Logo compacto - dimensiones fijas, sin deformación */}
+      {/* Logo con presencia - dimensiones fijas, sin deformación (evita CLS) */}
       <div 
         className={`relative flex-shrink-0 ${
           collapsed 
-            ? "h-[32px] w-[32px]" 
-            : "h-[36px] w-[100px]"
+            ? "h-[40px] w-[40px]" 
+            : "h-[52px] w-[160px]"
         }`}
       >
         <img
@@ -63,7 +63,7 @@ export function VespucioLogo({
 
       {/* Texto SGME - Solo en modo expandido, en la misma línea */}
       {!collapsed && (
-        <span className="text-lg font-bold text-white tracking-wide whitespace-nowrap">
+        <span className="text-xl font-bold text-white tracking-wide whitespace-nowrap leading-none">
           SGME
         </span>
       )}
