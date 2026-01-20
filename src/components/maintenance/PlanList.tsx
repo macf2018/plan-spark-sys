@@ -166,40 +166,47 @@ export function PlanList() {
     <>
       <Card className="shadow-notion">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <CardTitle>Órdenes de Trabajo</CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
-                {ordenes.length === 0 
+                {ordenes.length === 0
                   ? "No hay órdenes de trabajo en el sistema"
-                  : `${filteredOrdenes.length} de ${ordenes.length} registros`
-                }
+                  : `${filteredOrdenes.length} de ${ordenes.length} registros`}
               </p>
             </div>
-            <div className="flex gap-2">
-              <div className="relative w-64">
+
+            {/* Controles responsive: sin overflow horizontal en móvil */}
+            <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap lg:w-auto lg:justify-end">
+              <div className="relative w-full sm:w-64">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  placeholder="Buscar por sitio, tramo, PK..." 
+                <Input
+                  placeholder="Buscar por sitio, tramo, PK..."
                   className="pl-8"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-44">
+                <SelectTrigger className="w-full sm:w-44">
                   <Filter className="mr-2 h-4 w-4" />
                   <SelectValue placeholder="Filtrar" />
                 </SelectTrigger>
                 <SelectContent>
-                  {FILTER_STATES.map(state => (
+                  {FILTER_STATES.map((state) => (
                     <SelectItem key={state.value} value={state.value}>
                       {state.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <Button variant="outline" size="icon" onClick={toggleSortOrder} title="Ordenar por fecha">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={toggleSortOrder}
+                title="Ordenar por fecha"
+                className="w-full sm:w-10"
+              >
                 <ArrowUpDown className="h-4 w-4" />
               </Button>
             </div>
