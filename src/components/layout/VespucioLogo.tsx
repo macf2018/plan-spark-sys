@@ -10,18 +10,10 @@ interface VespucioLogoProps {
 }
 
 /**
- * Logo corporativo Autopista Vespucio Norte - RESPONSIVE
+ * Logo corporativo Autopista Vespucio Norte - RESPONSIVE SIN DEFORMACIONES
  * 
- * Contexto AUTH (Login/Registro) - Logo protagonista:
- * - móvil (<640px): h-24 (96px)
- * - tablet (640-1024px): h-28 (112px)
- * - desktop (>1024px): h-32 (128px)
- * 
- * Contexto SIDEBAR - Logo sobrio pero visible:
- * - móvil: h-16 (64px)
- * - tablet: h-14 (56px)
- * - desktop: h-12 (48px)
- * - collapsed: h-8 (32px) siempre
+ * Usa contenedores con dimensiones fijas para evitar CLS y aspect-ratio preservado.
+ * El logo NUNCA se estira - siempre object-contain dentro de su contenedor.
  */
 export function VespucioLogo({ 
   context = "sidebar", 
@@ -29,35 +21,19 @@ export function VespucioLogo({
   className = "" 
 }: VespucioLogoProps) {
   
-  // Clases responsive según contexto
-  const getLogoClasses = () => {
-    if (context === "auth") {
-      // Login/Registro: logo protagonista, más grande
-      // móvil: 96px, tablet: 112px, desktop: 128px
-      return "h-24 sm:h-28 lg:h-32 w-auto object-contain";
-    }
-    
-    // Sidebar
-    if (collapsed) {
-      // Sidebar colapsado: tamaño fijo
-      return "h-12 w-auto object-contain";
-    }
-    
-    // Sidebar expandido: tamaños aumentados (triple del original)
-    // móvil: 144px, tablet: 128px, desktop: 112px
-    return "h-36 sm:h-32 lg:h-28 w-auto object-contain";
-  };
-
   // En contexto auth: contenedor azul corporativo para coherencia con dashboard
   if (context === "auth") {
     return (
       <div className={`flex items-center justify-center ${className}`}>
         <div className="bg-primary rounded-xl px-8 py-6 sm:px-10 sm:py-8 lg:px-12 lg:py-10">
-          <img
-            src={logoVespucio}
-            alt="Autopista Vespucio Norte"
-            className={getLogoClasses()}
-          />
+          {/* Contenedor con dimensiones fijas por breakpoint - evita CLS */}
+          <div className="relative h-[80px] w-[200px] sm:h-[96px] sm:w-[240px] lg:h-[112px] lg:w-[280px]">
+            <img
+              src={logoVespucio}
+              alt="Autopista Vespucio Norte"
+              className="absolute inset-0 h-full w-full object-contain object-center"
+            />
+          </div>
         </div>
       </div>
     );
@@ -67,19 +43,28 @@ export function VespucioLogo({
   return (
     <Link 
       to="/" 
-      className={`flex flex-col items-center justify-center gap-2 transition-fast hover:opacity-80 w-full py-4 ${className}`}
+      className={`flex flex-col items-center justify-center gap-3 transition-fast hover:opacity-80 w-full py-5 px-3 ${className}`}
       title="Ir al Dashboard - SGME"
     >
-      <img
-        src={logoVespucio}
-        alt="Autopista Vespucio Norte"
-        className={getLogoClasses()}
-      />
+      {/* Contenedor con dimensiones fijas - NUNCA se deforma */}
+      <div 
+        className={`relative flex-shrink-0 ${
+          collapsed 
+            ? "h-[40px] w-[40px]" // Colapsado: cuadrado pequeño
+            : "h-[56px] w-[180px] sm:h-[64px] sm:w-[200px] lg:h-[72px] lg:w-[220px]" // Expandido: responsive
+        }`}
+      >
+        <img
+          src={logoVespucio}
+          alt="Autopista Vespucio Norte"
+          className="absolute inset-0 h-full w-full object-contain object-center"
+        />
+      </div>
 
       {/* Texto SGME - Solo en modo expandido del sidebar */}
       {!collapsed && (
-        <div className="flex flex-col items-center text-center">
-          <span className="text-base font-semibold text-white tracking-wide">
+        <div className="flex flex-col items-center text-center gap-0.5">
+          <span className="text-base font-semibold text-white tracking-wide leading-tight">
             SGME
           </span>
           <span className="text-xs text-white/60 leading-tight">
