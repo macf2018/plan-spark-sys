@@ -41,27 +41,26 @@ export function VespucioLogo({
 
   // Contexto sidebar: clickable hacia dashboard - Logo con presencia + SGME en UNA LÍNEA
   return (
-    <Link 
-      to="/" 
-      className={`flex items-center gap-3 transition-fast hover:opacity-80 w-full ${className}`}
+    <Link
+      to="/"
+      className={`flex items-center gap-3 transition-fast hover:opacity-80 w-full min-w-0 ${className}`}
       title="Ir al Dashboard - SGME"
     >
-      {/* Logo con presencia - dimensiones fijas, sin deformación (evita CLS) */}
-      <div 
+      {/* Logo: altura controlada (no cambia la altura del header), sin deformación */}
+      <div
         className={`relative flex-shrink-0 ${
-          collapsed 
-            ? "h-[40px] w-[40px]" 
-            : "h-[52px] w-[160px]"
+          collapsed ? "h-[40px] w-[40px]" : "h-[40px] w-[160px]"
         }`}
       >
         <img
           src={logoVespucio}
           alt="Autopista Vespucio Norte"
           className="absolute inset-0 h-full w-full object-contain object-left"
+          loading="lazy"
         />
       </div>
 
-      {/* Texto SGME - Solo en modo expandido, en la misma línea */}
+      {/* Texto SGME - siempre en la misma línea */}
       {!collapsed && (
         <span className="text-xl font-bold text-white tracking-wide whitespace-nowrap leading-none">
           SGME
