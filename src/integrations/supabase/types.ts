@@ -154,6 +154,35 @@ export type Database = {
         }
         Relationships: []
       }
+      catalogo_shelter_alias: {
+        Row: {
+          alias_nombre: string
+          created_at: string | null
+          id: string
+          shelter_id: string
+        }
+        Insert: {
+          alias_nombre: string
+          created_at?: string | null
+          id?: string
+          shelter_id: string
+        }
+        Update: {
+          alias_nombre?: string
+          created_at?: string | null
+          id?: string
+          shelter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalogo_shelter_alias_shelter_id_fkey"
+            columns: ["shelter_id"]
+            isOneToOne: false
+            referencedRelation: "catalogo_shelters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       catalogo_shelters: {
         Row: {
           activo: boolean | null
