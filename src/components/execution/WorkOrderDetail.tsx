@@ -35,6 +35,7 @@ import {
   FileText,
   Loader2,
   Save,
+  AlertTriangle,
 } from "lucide-react";
 import { ChecklistForm } from "./ChecklistForm";
 import { PhotoCapture } from "./PhotoCapture";
@@ -42,6 +43,7 @@ import { ObservationsPanel } from "./ObservationsPanel";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ORDER_STATES } from "@/lib/orderStatus";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface WorkOrderDetailProps {
   orderId: string;
@@ -67,6 +69,9 @@ interface OrdenTrabajo {
   fecha_inicio: string | null;
   fecha_fin: string | null;
   observaciones: string | null;
+  equipo_id: string | null;
+  equipo_match_status: string | null;
+  equipo_match_reason: string | null;
 }
 
 const getPriorityBadge = (criticidad: string | null) => {
@@ -381,6 +386,16 @@ export function WorkOrderDetail({ orderId, onClose }: WorkOrderDetailProps) {
 
   return (
     <div className="space-y-6">
+      {/* Alert de match si no hay equipo vinculado */}
+      {!orden.equipo_id && orden.equipo_match_status === 'NO_MATCH' && (
+        <Alert variant="default" className="border-warning/50 bg-warning/10">
+          <AlertTriangle className="h-4 w-4 text-warning" />
+          <AlertDescription className="text-muted-foreground">
+            <strong>Sin equipo vinculado:</strong> {orden.equipo_match_reason || 'No se encontró un equipo compatible en el inventario del sitio.'}
+          </AlertDescription>
+        </Alert>
+      )}
+
       <Card className="shadow-notion border-primary/20">
         <CardHeader>
           <div className="flex items-start justify-between">
