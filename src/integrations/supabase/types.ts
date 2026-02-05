@@ -561,6 +561,8 @@ export type Database = {
           criticidad: string | null
           descripcion_trabajo: string | null
           equipo_id: string | null
+          equipo_match_reason: string | null
+          equipo_match_status: string | null
           estado: string | null
           fecha_fin: string | null
           fecha_inicio: string | null
@@ -586,6 +588,8 @@ export type Database = {
           criticidad?: string | null
           descripcion_trabajo?: string | null
           equipo_id?: string | null
+          equipo_match_reason?: string | null
+          equipo_match_status?: string | null
           estado?: string | null
           fecha_fin?: string | null
           fecha_inicio?: string | null
@@ -611,6 +615,8 @@ export type Database = {
           criticidad?: string | null
           descripcion_trabajo?: string | null
           equipo_id?: string | null
+          equipo_match_reason?: string | null
+          equipo_match_status?: string | null
           estado?: string | null
           fecha_fin?: string | null
           fecha_inicio?: string | null
