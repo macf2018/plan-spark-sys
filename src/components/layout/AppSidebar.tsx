@@ -47,7 +47,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
-      <SidebarHeader className="border-b border-sidebar-border h-14 px-3 py-0 flex items-center overflow-hidden">
+      <SidebarHeader className="border-b border-sidebar-border h-16 px-3 py-0 flex items-center overflow-hidden">
         <VespucioLogo collapsed={!open} />
       </SidebarHeader>
 
