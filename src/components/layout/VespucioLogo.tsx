@@ -46,14 +46,13 @@ export function VespucioLogo({
        className={`flex items-end gap-3 transition-fast hover:opacity-80 w-full min-w-0 ${className}`}
        title="Ir al Dashboard - SGME"
      >
-      {/* Logo corporativo: altura 48px para presencia real en header h-16 */}
-      <img
-        src={logoVespucio}
-        alt="Autopista Vespucio Norte"
-        className={`flex-shrink-0 object-contain ${
-          collapsed ? "h-[48px] w-[48px]" : "h-[48px] w-auto"
-        }`}
-      />
+       {/* Logo corporativo: altura 48px style inline forzado para presencia real */}
+       <img
+         src={logoVespucio}
+         alt="Vespucio Norte"
+         style={{ height: "48px", width: "auto", display: "block" }}
+         className="object-contain flex-shrink-0"
+       />
 
        {/* Texto SGME - tamaño equilibrado, alineado por baseline con logo */}
        {!collapsed && (
