@@ -39,27 +39,20 @@ export function VespucioLogo({
     );
   }
 
-  // Contexto sidebar: clickable hacia dashboard - Logo grande + SGME discreto, alineados por baseline
-   return (
-     <Link
-       to="/"
-       className={`flex items-end gap-3 transition-fast hover:opacity-80 w-full min-w-0 ${className}`}
-       title="Ir al Dashboard - SGME"
-     >
-       {/* Logo corporativo: altura 48px style inline forzado para presencia real */}
-       <img
-         src={logoVespucio}
-         alt="Vespucio Norte"
-         style={{ height: "48px", width: "auto", display: "block" }}
-         className="object-contain flex-shrink-0"
-       />
-
-       {/* Texto SGME - tamaño equilibrado, alineado por baseline con logo */}
-       {!collapsed && (
-         <span className="text-lg font-semibold text-white tracking-wider whitespace-nowrap leading-none">
-           SGME
-         </span>
-       )}
+  // Contexto sidebar: clickable hacia dashboard - Solo logo corporativo
+  return (
+    <Link
+      to="/"
+      className={`flex items-end transition-fast hover:opacity-80 ${className}`}
+      title="Ir al Dashboard"
+    >
+      {/* Logo corporativo: altura 48px style inline forzado para presencia real */}
+      <img
+        src={logoVespucio}
+        alt="Autopista Vespucio Norte"
+        style={{ height: "48px", width: "auto", display: "block" }}
+        className="object-contain flex-shrink-0"
+      />
     </Link>
   );
 }
