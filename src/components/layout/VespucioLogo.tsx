@@ -46,11 +46,17 @@ export function VespucioLogo({
       className={`flex items-end transition-fast hover:opacity-80 ${className}`}
       title="Ir al Dashboard"
     >
-      {/* Logo corporativo: altura 48px style inline forzado para presencia real */}
+      {/* Logo corporativo: 56px + scale(2.0) para maximizar sin aumentar header */}
       <img
         src={logoVespucio}
         alt="Autopista Vespucio Norte"
-        style={{ height: "48px", width: "auto", display: "block" }}
+        style={{ 
+          height: "56px", 
+          width: "auto", 
+          display: "block",
+          transform: "scale(2.0)",
+          transformOrigin: "left bottom"
+        }}
         className="object-contain flex-shrink-0"
       />
     </Link>
