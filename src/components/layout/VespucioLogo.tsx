@@ -40,32 +40,32 @@ export function VespucioLogo({
   }
 
   // Contexto sidebar: clickable hacia dashboard - Logo grande + SGME discreto, alineados por baseline
-  return (
-    <Link
-      to="/"
-      className={`flex items-end gap-2 transition-fast hover:opacity-80 w-full min-w-0 ${className}`}
-      title="Ir al Dashboard - SGME"
-    >
-      {/* Logo: altura aumentada +60%, sin deformación */}
-      <div
-        className={`relative flex-shrink-0 ${
-          collapsed ? "h-[48px] w-[48px]" : "h-[48px] w-[180px]"
-        }`}
-      >
-        <img
-          src={logoVespucio}
-          alt="Autopista Vespucio Norte"
-          className="absolute inset-0 h-full w-full object-contain object-left"
-          loading="lazy"
-        />
-      </div>
+   return (
+     <Link
+       to="/"
+       className={`flex items-end gap-3 transition-fast hover:opacity-80 w-full min-w-0 ${className}`}
+       title="Ir al Dashboard - SGME"
+     >
+       {/* Logo: altura ajustada, sin deformación */}
+       <div
+         className={`relative flex-shrink-0 ${
+           collapsed ? "h-[40px] w-[40px]" : "h-[40px] w-[180px]"
+         }`}
+       >
+         <img
+           src={logoVespucio}
+           alt="Autopista Vespucio Norte"
+           className="absolute inset-0 h-full w-full object-contain object-left"
+           loading="lazy"
+         />
+       </div>
 
-      {/* Texto SGME - reducido ~50%, alineado por baseline con logo */}
-      {!collapsed && (
-        <span className="text-xs font-semibold text-white/90 tracking-wider whitespace-nowrap pb-0.5">
-          SGME
-        </span>
-      )}
+       {/* Texto SGME - tamaño equilibrado, alineado por baseline con logo */}
+       {!collapsed && (
+         <span className="text-lg font-semibold text-white tracking-wider whitespace-nowrap leading-none">
+           SGME
+         </span>
+       )}
     </Link>
   );
 }
