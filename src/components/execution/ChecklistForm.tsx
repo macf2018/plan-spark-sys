@@ -73,6 +73,7 @@ export function ChecklistForm({ orderId }: ChecklistFormProps) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [tipoEquipo, setTipoEquipo] = useState<string | null>(null);
+  const [templateSource, setTemplateSource] = useState<string | null>(null);
 
   // Obtener plantilla por tipo_equipo desde la base de datos
   const getTemplateByTipoEquipo = useCallback(async (tipo: string): Promise<Omit<ChecklistItem, "id">[]> => {
@@ -116,7 +117,7 @@ export function ChecklistForm({ orderId }: ChecklistFormProps) {
   }, []);
 
   // Obtener el tipo_equipo desde la OT o el equipo vinculado
-  const getTipoEquipoFromOT = useCallback(async (): Promise<string | null> => {
+  const getTipoEquipoFromOT = useCallback(async (): Promise<{ tipo: string | null; source: string }> => {
     try {
       // Primero obtener la OT con equipo_id
       const { data: ot, error: otError } = await supabase
@@ -125,7 +126,7 @@ export function ChecklistForm({ orderId }: ChecklistFormProps) {
         .eq("id", orderId)
         .maybeSingle();
 
-      if (otError || !ot) return null;
+      if (otError || !ot) return { tipo: null, source: "DEFAULT" };
 
       // Si hay equipo vinculado, obtener su tipo_equipo
       if (ot.equipo_id) {
@@ -136,7 +137,7 @@ export function ChecklistForm({ orderId }: ChecklistFormProps) {
           .maybeSingle();
 
         if (!equipoError && equipo?.tipo_equipo) {
-          return equipo.tipo_equipo;
+          return { tipo: equipo.tipo_equipo, source: "EQUIPO_VINCULADO" };
         }
       }
 
@@ -144,19 +145,19 @@ export function ChecklistForm({ orderId }: ChecklistFormProps) {
       // Mapear valores conocidos
       const tipoOT = ot.tipo_equipo?.toLowerCase() || "";
       if (tipoOT.includes("centro") || tipoOT.includes("transformacion") || tipoOT.includes("ct")) {
-        return "Centro de Transformacion";
+        return { tipo: "Centro de Transformacion", source: "FALLBACK_OT" };
       }
       if (tipoOT.includes("shelter") || tipoOT.includes("sala")) {
-        return "Salas electricas y tecnica (Shelter)";
+        return { tipo: "Salas electricas y tecnica (Shelter)", source: "FALLBACK_OT" };
       }
       if (tipoOT.includes("generador") || tipoOT.includes("grupo")) {
-        return "Grupos Generadores";
+        return { tipo: "Grupos Generadores", source: "FALLBACK_OT" };
       }
 
-      return null;
+      return { tipo: null, source: "DEFAULT" };
     } catch (err) {
       console.error("Error obteniendo tipo_equipo de OT:", err);
-      return null;
+      return { tipo: null, source: "DEFAULT" };
     }
   }, [orderId]);
 
@@ -185,10 +186,11 @@ export function ChecklistForm({ orderId }: ChecklistFormProps) {
         );
       } else {
         // No existe checklist - inicializar con plantilla según tipo_equipo
-        const tipo = await getTipoEquipoFromOT();
-        setTipoEquipo(tipo);
+        const result = await getTipoEquipoFromOT();
+        setTipoEquipo(result.tipo);
+        setTemplateSource(result.source);
 
-        const template = tipo ? await getTemplateByTipoEquipo(tipo) : DEFAULT_CHECKLIST;
+        const template = result.tipo ? await getTemplateByTipoEquipo(result.tipo) : DEFAULT_CHECKLIST;
         
         const initialItems: ChecklistItem[] = template.map((item, index) => ({
           ...item,
@@ -335,10 +337,11 @@ export function ChecklistForm({ orderId }: ChecklistFormProps) {
             </Badge>
           </div>
         </div>
-        {tipoEquipo && (
-          <p className="text-xs text-muted-foreground mt-1">
-            Plantilla: {tipoEquipo}
-          </p>
+        {(tipoEquipo || templateSource) && (
+          <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
+            <p>Plantilla: {tipoEquipo || "Genérica (DEFAULT)"}</p>
+            <p>Origen: {templateSource === "EQUIPO_VINCULADO" ? "Equipo vinculado" : templateSource === "FALLBACK_OT" ? "FALLBACK (texto OT)" : "DEFAULT (sin match)"}</p>
+          </div>
         )}
         <div className="mt-4 space-y-2">
           <div className="flex items-center justify-between text-sm">
