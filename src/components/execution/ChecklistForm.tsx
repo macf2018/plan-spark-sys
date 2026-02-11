@@ -319,6 +319,12 @@ export function ChecklistForm({ orderId }: ChecklistFormProps) {
   return (
     <Card className="shadow-notion">
       <CardHeader>
+        {(tipoEquipo || templateSource) && (
+          <div className="bg-sidebar-accent/20 text-white text-xs px-3 py-2 rounded-md mb-3">
+            <p><strong>Plantilla:</strong> {tipoEquipo || "Genérica"}</p>
+            <p><strong>Origen:</strong> {templateSource === "EQUIPO_VINCULADO" ? "Equipo vinculado" : templateSource === "FALLBACK_OT" ? "FALLBACK (OT)" : "DEFAULT"}</p>
+          </div>
+        )}
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             Checklist de Ejecución
