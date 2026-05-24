@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/layout/Header";
@@ -5,19 +6,84 @@ import {
   Calendar,
   ClipboardCheck,
   BarChart3,
-  AlertTriangle,
   CheckCircle2,
   Clock,
-  TrendingUp,
+  FileText,
   Activity,
+  PlayCircle,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+
+interface DashboardKPIs {
+  total: number;
+  planificadas: number;
+  enEjecucion: number;
+  completadas: number;
+}
 
 export default function Dashboard() {
+  const [kpis, setKpis] = useState<DashboardKPIs>({
+    total: 0,
+    planificadas: 0,
+    enEjecucion: 0,
+    completadas: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchKPIs = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("ordenes_trabajo")
+          .select("estado");
+
+        if (error) throw error;
+
+        const calc: DashboardKPIs = {
+          total: data?.length || 0,
+          planificadas: 0,
+          enEjecucion: 0,
+          completadas: 0,
+        };
+
+        data?.forEach((row) => {
+          const e = (row.estado ?? "planificada").toLowerCase().trim();
+          if (e === "planificada" || e === "pendiente") {
+            calc.planificadas++;
+          } else if (
+            e === "en ejecución" ||
+            e === "en ejecucion" ||
+            e === "en_ejecucion" ||
+            e === "pausada"
+          ) {
+            calc.enEjecucion++;
+          } else if (
+            e === "completada" ||
+            e === "cerrada" ||
+            e === "finalizada"
+          ) {
+            calc.completadas++;
+          }
+        });
+
+        setKpis(calc);
+      } catch (err) {
+        console.error("Error fetching dashboard KPIs:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchKPIs();
+  }, []);
+
+  const display = (n: number) => (loading ? "…" : n.toString());
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header title="Sistema de Gestión de Mantenimiento Eléctrico" />
-      
+
       <main className="flex-1 p-4 sm:p-6 space-y-6">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-secondary">Dashboard Principal</h2>
@@ -26,57 +92,57 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* KPI Cards */}
+        {/* KPI Cards (datos reales desde ordenes_trabajo) */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card className="shadow-notion hover:shadow-notion-hover transition-smooth border-border">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Equipos
+                Total OT
               </CardTitle>
-              <TrendingUp className="h-4 w-4 text-accent" />
+              <FileText className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">48</div>
-              <p className="text-xs text-muted-foreground mt-1">+4 este mes</p>
+              <div className="text-2xl font-bold text-foreground">{display(kpis.total)}</div>
+              <p className="text-xs text-muted-foreground mt-1">Órdenes registradas</p>
             </CardContent>
           </Card>
 
           <Card className="shadow-notion hover:shadow-notion-hover transition-smooth border-border">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Mantenimientos Activos
+                Planificadas
               </CardTitle>
               <Clock className="h-4 w-4 text-warning" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">12</div>
-              <p className="text-xs text-muted-foreground mt-1">En progreso</p>
+              <div className="text-2xl font-bold text-foreground">{display(kpis.planificadas)}</div>
+              <p className="text-xs text-muted-foreground mt-1">Por ejecutar</p>
             </CardContent>
           </Card>
 
           <Card className="shadow-notion hover:shadow-notion-hover transition-smooth border-border">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Completados (Mes)
+                En Ejecución
+              </CardTitle>
+              <PlayCircle className="h-4 w-4 text-blue-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">{display(kpis.enEjecucion)}</div>
+              <p className="text-xs text-muted-foreground mt-1">Incluye pausadas</p>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-notion hover:shadow-notion-hover transition-smooth border-border">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Completadas
               </CardTitle>
               <CheckCircle2 className="h-4 w-4 text-success" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">87</div>
-              <p className="text-xs text-muted-foreground mt-1">+15% vs mes anterior</p>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-notion hover:shadow-notion-hover transition-smooth border-border">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Alertas Críticas
-              </CardTitle>
-              <AlertTriangle className="h-4 w-4 text-destructive" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">3</div>
-              <p className="text-xs text-muted-foreground mt-1">Requieren atención</p>
+              <div className="text-2xl font-bold text-foreground">{display(kpis.completadas)}</div>
+              <p className="text-xs text-muted-foreground mt-1">Cerradas / Finalizadas</p>
             </CardContent>
           </Card>
         </div>
@@ -190,54 +256,6 @@ export default function Dashboard() {
             </Link>
           </div>
         </div>
-
-        {/* Recent Activity */}
-        <Card className="shadow-notion border-border">
-          <CardHeader>
-            <CardTitle className="text-xl text-secondary">Actividad Reciente</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {[
-                {
-                  action: "Plan creado",
-                  description: "Mantenimiento Preventivo Q1 - Transformador #1",
-                  time: "Hace 2 horas",
-                  type: "success",
-                },
-                {
-                  action: "Alerta generada",
-                  description: "Conflicto de programación detectado en Panel Principal",
-                  time: "Hace 5 horas",
-                  type: "warning",
-                },
-                {
-                  action: "Mantenimiento completado",
-                  description: "Revisión Generador A - Finalizado por Pedro Martínez",
-                  time: "Hace 1 día",
-                  type: "success",
-                },
-              ].map((activity, i) => (
-                <div key={i} className="flex items-start gap-3 pb-4 border-b border-border last:border-0 transition-fast hover:bg-muted/30 -mx-2 px-2 rounded-md">
-                  <div
-                    className={`mt-1 h-2 w-2 rounded-full ${
-                      activity.type === "success" ? "bg-success" : "bg-warning"
-                    }`}
-                  />
-                  <div className="flex-1">
-                    <p className="font-medium text-foreground">{activity.action}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {activity.description}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {activity.time}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
       </main>
     </div>
   );
