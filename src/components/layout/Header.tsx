@@ -37,12 +37,15 @@ export function Header({ title, showNavigation = false }: HeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-border bg-primary px-4 shadow-md">
-      {/* SidebarTrigger - único control de navegación del sidebar */}
-      <SidebarTrigger className="transition-fast text-white hover:bg-white/10" />
-      
+    <header className="sticky top-0 z-40 flex h-16 items-center gap-2 sm:gap-4 border-b border-border bg-primary px-3 sm:px-4 shadow-md">
+      {/* SidebarTrigger - único control de navegación del sidebar. Touch target ≥44px en móvil. */}
+      <SidebarTrigger
+        aria-label="Abrir menú de navegación"
+        className="h-11 w-11 sm:h-9 sm:w-9 shrink-0 transition-fast text-white hover:bg-white/10"
+      />
+
       {showNavigation && (
-        <div className="flex gap-1">
+        <div className="hidden sm:flex gap-1">
           <Button
             variant="ghost"
             size="icon"
@@ -64,7 +67,7 @@ export function Header({ title, showNavigation = false }: HeaderProps) {
         </div>
       )}
 
-      <h1 className="text-lg font-semibold tracking-tight text-white">{title}</h1>
+      <h1 className="text-base sm:text-lg font-semibold tracking-tight text-white truncate min-w-0">{title}</h1>
 
       <div className="ml-auto flex items-center gap-2">
         <Button 
