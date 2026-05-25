@@ -372,10 +372,10 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription className="text-sm">
+        <div className="space-y-3 sm:space-y-4">
+          <Alert className="px-3 py-2 sm:px-4 sm:py-3">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            <AlertDescription className="text-xs sm:text-sm">
               <strong>Columnas requeridas:</strong> anio, mes, fecha_programada, nombre_sitio, tramo, pk, tipo_equipo, tipo_mantenimiento, frecuencia
               <br />
               <strong>Columnas opcionales:</strong> proveedor_codigo, proveedor_nombre, criticidad, ventana_horaria, descripcion_trabajo
