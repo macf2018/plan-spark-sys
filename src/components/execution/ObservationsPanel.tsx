@@ -161,12 +161,13 @@ export function ObservationsPanel({ orderId }: ObservationsPanelProps) {
 
       <CardContent className="space-y-4">
         <div className="space-y-3">
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant={observationType === "info" ? "default" : "outline"}
               size="sm"
               onClick={() => setObservationType("info")}
               disabled={saving}
+              className="min-h-[40px]"
             >
               <Info className="mr-2 h-4 w-4" />
               Info
@@ -176,6 +177,7 @@ export function ObservationsPanel({ orderId }: ObservationsPanelProps) {
               size="sm"
               onClick={() => setObservationType("warning")}
               disabled={saving}
+              className="min-h-[40px]"
             >
               <AlertTriangle className="mr-2 h-4 w-4" />
               Alerta
@@ -185,6 +187,7 @@ export function ObservationsPanel({ orderId }: ObservationsPanelProps) {
               size="sm"
               onClick={() => setObservationType("success")}
               disabled={saving}
+              className="min-h-[40px]"
             >
               <CheckCircle2 className="mr-2 h-4 w-4" />
               Éxito
