@@ -439,9 +439,9 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
           <Button 
             onClick={() => fileInputRef.current?.click()}
             disabled={isValidating || isUploading}
-            className="w-full"
+            className="w-full py-5 sm:py-2.5 text-sm sm:text-base"
           >
-            <FileSpreadsheet className="mr-2 h-5 w-5" />
+            <FileSpreadsheet className="mr-2 h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
             {isValidating ? "Validando archivo..." : "Seleccionar archivo CSV"}
           </Button>
 
