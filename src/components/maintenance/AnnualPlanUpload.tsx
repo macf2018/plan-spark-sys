@@ -465,9 +465,9 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
           )}
 
           {records.length > 0 && (
-            <div className="border rounded-lg">
-              <div className="p-3 bg-muted">
-                <span className="font-semibold">Vista Previa de Registros Válidos ({records.length})</span>
+            <div className="border rounded-lg overflow-hidden">
+              <div className="p-2 sm:p-3 bg-muted">
+                <span className="font-semibold text-xs sm:text-sm">Vista Previa de Registros Válidos ({records.length})</span>
               </div>
               
               <ScrollArea className="h-[300px]">
