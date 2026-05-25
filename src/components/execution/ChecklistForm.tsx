@@ -320,17 +320,17 @@ export function ChecklistForm({ orderId }: ChecklistFormProps) {
     <Card className="shadow-notion">
       <CardHeader>
         {(tipoEquipo || templateSource) && (
-          <div className="bg-sidebar-accent/20 text-white text-xs px-3 py-2 rounded-md mb-3">
+          <div className="bg-sidebar-accent/20 text-white text-xs px-3 py-2 rounded-md mb-3 break-words">
             <p><strong>Plantilla:</strong> {tipoEquipo || "Genérica"}</p>
             <p><strong>Origen:</strong> {templateSource === "EQUIPO_VINCULADO" ? "Equipo vinculado" : templateSource === "FALLBACK_OT" ? "FALLBACK (OT)" : "DEFAULT"}</p>
           </div>
         )}
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg min-w-0 break-words">
             Checklist de Ejecución
-            {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+            {saving && <Loader2 className="h-4 w-4 animate-spin shrink-0" />}
           </CardTitle>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-2">
             <Badge variant="outline">
               {completedCount}/{items.length} completadas
             </Badge>
@@ -344,7 +344,7 @@ export function ChecklistForm({ orderId }: ChecklistFormProps) {
           </div>
         </div>
         {(tipoEquipo || templateSource) && (
-          <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
+          <div className="text-xs text-muted-foreground mt-1 space-y-0.5 break-words">
             <p>Plantilla: {tipoEquipo || "Genérica (DEFAULT)"}</p>
             <p>Origen: {templateSource === "EQUIPO_VINCULADO" ? "Equipo vinculado" : templateSource === "FALLBACK_OT" ? "FALLBACK (texto OT)" : "DEFAULT (sin match)"}</p>
           </div>
