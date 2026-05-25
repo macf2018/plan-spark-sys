@@ -398,17 +398,17 @@ export function WorkOrderDetail({ orderId, onClose }: WorkOrderDetailProps) {
 
       <Card className="shadow-notion border-primary/20">
         <CardHeader>
-          <div className="flex items-start justify-between">
-            <div className="space-y-1">
-              <CardTitle className="text-2xl">OT-{orden.id.slice(0, 8).toUpperCase()}</CardTitle>
-              <p className="text-muted-foreground">{orden.tipo_mantenimiento} - {orden.nombre_sitio}</p>
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+            <div className="space-y-1 min-w-0">
+              <CardTitle className="text-xl sm:text-2xl break-words">OT-{orden.id.slice(0, 8).toUpperCase()}</CardTitle>
+              <p className="text-sm sm:text-base text-muted-foreground break-words">{orden.tipo_mantenimiento} - {orden.nombre_sitio}</p>
             </div>
-            {getPriorityBadge(orden.criticidad)}
+            <div className="shrink-0">{getPriorityBadge(orden.criticidad)}</div>
           </div>
         </CardHeader>
 
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Wrench className="h-4 w-4 text-muted-foreground" />
