@@ -361,13 +361,13 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-7xl max-h-[90vh]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FileSpreadsheet className="h-5 w-5" />
+      <DialogContent className="max-w-[95vw] sm:max-w-7xl max-h-[90vh] p-4 sm:p-6">
+        <DialogHeader className="space-y-2 sm:space-y-3">
+          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <FileSpreadsheet className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
             Carga de Plan Anual de Mantenimiento
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs sm:text-sm">
             Importe el plan anual desde un archivo CSV con las columnas requeridas
           </DialogDescription>
         </DialogHeader>
