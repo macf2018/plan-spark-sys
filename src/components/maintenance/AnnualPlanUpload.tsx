@@ -446,12 +446,12 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
           </Button>
 
           {errors.length > 0 && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
+            <Alert variant="destructive" className="px-3 py-2 sm:px-4 sm:py-3">
+              <AlertCircle className="h-4 w-4 shrink-0" />
               <AlertDescription>
-                <strong>Errores encontrados ({errors.length}):</strong>
-                <ScrollArea className="h-40 mt-2">
-                  <div className="space-y-2 text-sm">
+                <strong className="text-sm">Errores encontrados ({errors.length}):</strong>
+                <ScrollArea className="h-32 sm:h-40 mt-2">
+                  <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
                     {errors.map((error, i) => (
                       <div key={i} className="border-l-2 border-destructive pl-3 py-1">
                         <div className="font-semibold">Fila {error.row} - Campo: {error.field}</div>
