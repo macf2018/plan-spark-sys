@@ -358,8 +358,7 @@ export function PlanList() {
                 ))}
               </div>
             </>
-          )}</parameter>
-</invoke>
+          )}
         </CardContent>
       </Card>
 
