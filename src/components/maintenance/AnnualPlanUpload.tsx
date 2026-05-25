@@ -382,36 +382,37 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
             </AlertDescription>
           </Alert>
 
-          <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-            <div className="flex gap-6">
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="text-base">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 p-3 sm:p-4 bg-muted rounded-lg">
+            <div className="flex flex-wrap gap-2 sm:gap-6">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Badge variant="outline" className="text-xs sm:text-base">
                   Total: {totalRows}
                 </Badge>
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-green-600" />
-                <Badge variant="default" className="bg-green-600 text-base">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-600 shrink-0" />
+                <Badge variant="default" className="bg-green-600 text-xs sm:text-base">
                   Válidos: {validCount}
                 </Badge>
               </div>
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 text-destructive" />
-                <Badge variant="destructive" className="text-base">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <AlertCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-destructive shrink-0" />
+                <Badge variant="destructive" className="text-xs sm:text-base">
                   Errores: {errorCount}
                 </Badge>
               </div>
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full sm:w-auto">
               {errorCount > 0 && (
                 <Button 
                   variant="outline" 
                   size="sm"
                   onClick={downloadErrorsCSV}
+                  className="flex-1 sm:flex-none"
                 >
-                  <Download className="mr-2 h-4 w-4" />
-                  Descargar Errores
+                  <Download className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="text-xs sm:text-sm">Descargar Errores</span>
                 </Button>
               )}
               {(validCount > 0 || errorCount > 0) && (
@@ -420,8 +421,9 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
                   size="sm"
                   onClick={handleClearPreview}
                   disabled={isValidating || isUploading}
+                  className="flex-1 sm:flex-none"
                 >
-                  Limpiar Vista Previa
+                  <span className="text-xs sm:text-sm">Limpiar Vista Previa</span>
                 </Button>
               )}
             </div>
