@@ -202,7 +202,7 @@ export function ObservationsPanel({ orderId }: ObservationsPanelProps) {
             disabled={saving}
           />
 
-          <Button onClick={addObservation} className="w-full" disabled={saving}>
+          <Button onClick={addObservation} className="w-full min-h-[44px]" disabled={saving}>
             {saving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
