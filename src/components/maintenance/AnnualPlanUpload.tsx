@@ -515,13 +515,14 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
           )}
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isUploading}>
+        <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0 mt-4 sm:mt-0">
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isUploading} className="w-full sm:w-auto">
             Cancelar
           </Button>
           <Button 
             onClick={handleConfirmUpload} 
             disabled={records.length === 0 || isUploading}
+            className="w-full sm:w-auto"
           >
             {isUploading ? "Creando OT..." : `Confirmar Carga (${records.length} registros)`}
           </Button>
