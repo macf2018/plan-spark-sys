@@ -367,7 +367,7 @@ export function ChecklistForm({ orderId }: ChecklistFormProps) {
         {items.map((item) => (
           <div
             key={item.id}
-            className={`p-4 border rounded-lg space-y-3 transition-smooth ${
+            className={`p-3 sm:p-4 border rounded-lg space-y-3 transition-smooth ${
               item.completed ? "bg-muted/30" : "bg-card"
             }`}
           >
@@ -376,31 +376,31 @@ export function ChecklistForm({ orderId }: ChecklistFormProps) {
                 id={item.id}
                 checked={item.completed}
                 onCheckedChange={() => toggleItem(item.id)}
-                className="mt-1"
+                className="mt-1 shrink-0 h-5 w-5"
               />
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
                   <Label
                     htmlFor={item.id}
-                    className={`font-medium cursor-pointer ${
+                    className={`font-medium cursor-pointer break-words min-w-0 ${
                       item.completed ? "line-through text-muted-foreground" : ""
                     }`}
                   >
                     {item.title}
                   </Label>
                   {item.required && (
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="text-xs shrink-0">
                       <AlertCircle className="mr-1 h-3 w-3" />
                       Requerido
                     </Badge>
                   )}
                   {item.completed ? (
-                    <CheckCircle2 className="h-4 w-4 text-success" />
+                    <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
                   ) : (
-                    <Circle className="h-4 w-4 text-muted-foreground" />
+                    <Circle className="h-4 w-4 text-muted-foreground shrink-0" />
                   )}
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-sm text-muted-foreground mt-1 break-words">
                   {item.description}
                 </p>
 
@@ -414,7 +414,7 @@ export function ChecklistForm({ orderId }: ChecklistFormProps) {
                     value={item.notes || ""}
                     onChange={(e) => updateNotes(item.id, e.target.value)}
                     onBlur={(e) => saveNotes(item.id, e.target.value)}
-                    className="mt-1 text-sm"
+                    className="mt-1 text-sm w-full"
                     rows={2}
                   />
                 </div>
