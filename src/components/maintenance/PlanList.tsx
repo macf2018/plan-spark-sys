@@ -223,67 +223,141 @@ export function PlanList() {
               <p>No se encontraron resultados con los filtros aplicados.</p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[100px]">ID</TableHead>
-                  <TableHead>Fecha Prog.</TableHead>
-                  <TableHead>Sitio</TableHead>
-                  <TableHead>Tramo</TableHead>
-                  <TableHead>PK</TableHead>
-                  <TableHead>Tipo Equipo</TableHead>
-                  <TableHead>Mantenimiento</TableHead>
-                  <TableHead>Frecuencia</TableHead>
-                  <TableHead>Proveedor</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Vista tabla: tablet y desktop */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[100px]">ID</TableHead>
+                      <TableHead>Fecha Prog.</TableHead>
+                      <TableHead>Sitio</TableHead>
+                      <TableHead>Tramo</TableHead>
+                      <TableHead>PK</TableHead>
+                      <TableHead>Tipo Equipo</TableHead>
+                      <TableHead>Mantenimiento</TableHead>
+                      <TableHead>Frecuencia</TableHead>
+                      <TableHead>Proveedor</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead className="text-right">Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredOrdenes.map((orden) => (
+                      <TableRow key={orden.id}>
+                        <TableCell className="font-mono text-xs">
+                          {orden.id.substring(0, 8)}...
+                        </TableCell>
+                        <TableCell>{orden.fecha_programada}</TableCell>
+                        <TableCell className="max-w-[150px] truncate" title={orden.nombre_sitio}>
+                          {orden.nombre_sitio}
+                        </TableCell>
+                        <TableCell>{orden.tramo}</TableCell>
+                        <TableCell>{orden.pk}</TableCell>
+                        <TableCell>{orden.tipo_equipo}</TableCell>
+                        <TableCell>{orden.tipo_mantenimiento}</TableCell>
+                        <TableCell>{orden.frecuencia}</TableCell>
+                        <TableCell>{orden.proveedor_nombre || '-'}</TableCell>
+                        <TableCell>
+                          <Badge className={getStatusColor(orden.estado)}>
+                            {getStatusLabel(orden.estado)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleViewDetail(orden)}
+                              title="Ver detalle"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteOrden(orden.id)}
+                              title="Eliminar"
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Vista cards: móvil */}
+              <div className="md:hidden space-y-3">
                 {filteredOrdenes.map((orden) => (
-                  <TableRow key={orden.id}>
-                    <TableCell className="font-mono text-xs">
-                      {orden.id.substring(0, 8)}...
-                    </TableCell>
-                    <TableCell>{orden.fecha_programada}</TableCell>
-                    <TableCell className="max-w-[150px] truncate" title={orden.nombre_sitio}>
-                      {orden.nombre_sitio}
-                    </TableCell>
-                    <TableCell>{orden.tramo}</TableCell>
-                    <TableCell>{orden.pk}</TableCell>
-                    <TableCell>{orden.tipo_equipo}</TableCell>
-                    <TableCell>{orden.tipo_mantenimiento}</TableCell>
-                    <TableCell>{orden.frecuencia}</TableCell>
-                    <TableCell>{orden.proveedor_nombre || '-'}</TableCell>
-                    <TableCell>
-                      <Badge className={getStatusColor(orden.estado)}>
-                        {getStatusLabel(orden.estado)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button 
-                          variant="ghost" 
-                          size="icon"
+                  <Card key={orden.id} className="shadow-sm">
+                    <CardContent className="p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-mono text-xs text-muted-foreground">
+                            OT-{orden.id.substring(0, 8).toUpperCase()}
+                          </p>
+                          <p className="font-semibold text-sm truncate" title={orden.nombre_sitio}>
+                            {orden.nombre_sitio}
+                          </p>
+                        </div>
+                        <Badge className={`${getStatusColor(orden.estado)} shrink-0`}>
+                          {getStatusLabel(orden.estado)}
+                        </Badge>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <p className="text-muted-foreground">Tipo equipo</p>
+                          <p className="font-medium truncate" title={orden.tipo_equipo}>
+                            {orden.tipo_equipo}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Fecha prog.</p>
+                          <p className="font-medium">{orden.fecha_programada}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Tramo / PK</p>
+                          <p className="font-medium truncate">
+                            {orden.tramo} / {orden.pk}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Proveedor</p>
+                          <p className="font-medium truncate" title={orden.proveedor_nombre || '-'}>
+                            {orden.proveedor_nombre || '-'}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 pt-1 border-t">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 min-h-[44px]"
                           onClick={() => handleViewDetail(orden)}
-                          title="Ver detalle"
                         >
-                          <Eye className="h-4 w-4" />
+                          <Eye className="mr-2 h-4 w-4" />
+                          Ver detalle
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon"
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="min-h-[44px] min-w-[44px]"
                           onClick={() => handleDeleteOrden(orden.id)}
                           title="Eliminar"
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
-                    </TableCell>
-                  </TableRow>
+                    </CardContent>
+                  </Card>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
