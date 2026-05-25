@@ -231,8 +231,8 @@ export function PhotoCapture({ orderId }: PhotoCaptureProps) {
             />
           </div>
 
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex-1" disabled={uploading} asChild>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button variant="outline" className="w-full sm:flex-1 min-h-[44px]" disabled={uploading} asChild>
               <label className="cursor-pointer">
                 {uploading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -251,7 +251,7 @@ export function PhotoCapture({ orderId }: PhotoCaptureProps) {
               </label>
             </Button>
 
-            <Button variant="outline" className="flex-1" disabled={uploading} asChild>
+            <Button variant="outline" className="w-full sm:flex-1 min-h-[44px]" disabled={uploading} asChild>
               <label className="cursor-pointer">
                 {uploading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -293,7 +293,7 @@ export function PhotoCapture({ orderId }: PhotoCaptureProps) {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {photos.map((photo) => (
                 <div
                   key={photo.id}

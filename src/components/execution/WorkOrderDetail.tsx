@@ -589,33 +589,33 @@ export function WorkOrderDetail({ orderId, onClose }: WorkOrderDetailProps) {
         </CardContent>
       </Card>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+        <div className="space-y-4 lg:space-y-6 min-w-0">
           <ChecklistForm orderId={orderId} />
           <PhotoCapture orderId={orderId} />
         </div>
 
-        <div>
+        <div className="min-w-0">
           <ObservationsPanel orderId={orderId} />
         </div>
       </div>
 
       <Dialog open={showCompleteDialog} onOpenChange={setShowCompleteDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Completar Orden de Trabajo</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-base sm:text-lg break-words">Completar Orden de Trabajo</DialogTitle>
+            <DialogDescription className="text-sm">
               Está a punto de marcar esta orden como completada. Agregue notas finales si es necesario.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
-            <div className="p-4 bg-warning/10 border border-warning/20 rounded-lg">
+            <div className="p-3 sm:p-4 bg-warning/10 border border-warning/20 rounded-lg">
               <div className="flex gap-2">
                 <AlertCircle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
-                <div className="text-sm">
+                <div className="text-sm min-w-0">
                   <p className="font-medium">Verificar antes de completar:</p>
-                  <ul className="list-disc list-inside mt-2 space-y-1 text-muted-foreground">
+                  <ul className="list-disc list-inside mt-2 space-y-1 text-muted-foreground break-words">
                     <li>Todas las tareas requeridas están completadas</li>
                     <li>Las fotos del trabajo están registradas</li>
                     <li>Las observaciones importantes están documentadas</li>
@@ -636,11 +636,11 @@ export function WorkOrderDetail({ orderId, onClose }: WorkOrderDetailProps) {
             </div>
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCompleteDialog(false)}>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setShowCompleteDialog(false)} className="w-full sm:w-auto min-h-[44px]">
               Cancelar
             </Button>
-            <Button onClick={confirmComplete}>
+            <Button onClick={confirmComplete} className="w-full sm:w-auto min-h-[44px]">
               <CheckCircle2 className="mr-2 h-4 w-4" />
               Confirmar Completación
             </Button>

@@ -161,12 +161,13 @@ export function ObservationsPanel({ orderId }: ObservationsPanelProps) {
 
       <CardContent className="space-y-4">
         <div className="space-y-3">
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant={observationType === "info" ? "default" : "outline"}
               size="sm"
               onClick={() => setObservationType("info")}
               disabled={saving}
+              className="min-h-[40px]"
             >
               <Info className="mr-2 h-4 w-4" />
               Info
@@ -176,6 +177,7 @@ export function ObservationsPanel({ orderId }: ObservationsPanelProps) {
               size="sm"
               onClick={() => setObservationType("warning")}
               disabled={saving}
+              className="min-h-[40px]"
             >
               <AlertTriangle className="mr-2 h-4 w-4" />
               Alerta
@@ -185,6 +187,7 @@ export function ObservationsPanel({ orderId }: ObservationsPanelProps) {
               size="sm"
               onClick={() => setObservationType("success")}
               disabled={saving}
+              className="min-h-[40px]"
             >
               <CheckCircle2 className="mr-2 h-4 w-4" />
               Éxito
@@ -199,7 +202,7 @@ export function ObservationsPanel({ orderId }: ObservationsPanelProps) {
             disabled={saving}
           />
 
-          <Button onClick={addObservation} className="w-full" disabled={saving}>
+          <Button onClick={addObservation} className="w-full min-h-[44px]" disabled={saving}>
             {saving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -232,29 +235,29 @@ export function ObservationsPanel({ orderId }: ObservationsPanelProps) {
                 return (
                   <div
                     key={obs.id}
-                    className={`p-4 border rounded-lg space-y-2 ${config.color}`}
+                    className={`p-3 sm:p-4 border rounded-lg space-y-2 ${config.color}`}
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <Icon className="h-4 w-4" />
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                      <div className="flex flex-wrap items-center gap-2 min-w-0">
+                        <Icon className="h-4 w-4 shrink-0" />
                         <Badge className={config.badge}>{config.label}</Badge>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">
+                      <div className="flex items-center gap-2 sm:shrink-0">
+                        <span className="text-xs text-muted-foreground break-words">
                           {obs.timestamp}
                         </span>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6"
+                          className="h-6 w-6 shrink-0"
                           onClick={() => deleteObservation(obs.id)}
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
                     </div>
-                    <p className="text-sm">{obs.text}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-sm break-words">{obs.text}</p>
+                    <p className="text-xs text-muted-foreground break-words">
                       Por: {obs.author}
                     </p>
                   </div>
