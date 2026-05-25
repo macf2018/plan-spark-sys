@@ -361,57 +361,58 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-7xl max-h-[90vh]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FileSpreadsheet className="h-5 w-5" />
+      <DialogContent className="max-w-[95vw] sm:max-w-7xl max-h-[90vh] p-4 sm:p-6">
+        <DialogHeader className="space-y-2 sm:space-y-3">
+          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <FileSpreadsheet className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
             Carga de Plan Anual de Mantenimiento
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs sm:text-sm">
             Importe el plan anual desde un archivo CSV con las columnas requeridas
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription className="text-sm">
+        <div className="space-y-3 sm:space-y-4">
+          <Alert className="px-3 py-2 sm:px-4 sm:py-3">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            <AlertDescription className="text-xs sm:text-sm">
               <strong>Columnas requeridas:</strong> anio, mes, fecha_programada, nombre_sitio, tramo, pk, tipo_equipo, tipo_mantenimiento, frecuencia
               <br />
               <strong>Columnas opcionales:</strong> proveedor_codigo, proveedor_nombre, criticidad, ventana_horaria, descripcion_trabajo
             </AlertDescription>
           </Alert>
 
-          <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-            <div className="flex gap-6">
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="text-base">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 p-3 sm:p-4 bg-muted rounded-lg">
+            <div className="flex flex-wrap gap-2 sm:gap-6">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Badge variant="outline" className="text-xs sm:text-base">
                   Total: {totalRows}
                 </Badge>
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-green-600" />
-                <Badge variant="default" className="bg-green-600 text-base">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-600 shrink-0" />
+                <Badge variant="default" className="bg-green-600 text-xs sm:text-base">
                   Válidos: {validCount}
                 </Badge>
               </div>
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 text-destructive" />
-                <Badge variant="destructive" className="text-base">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <AlertCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-destructive shrink-0" />
+                <Badge variant="destructive" className="text-xs sm:text-base">
                   Errores: {errorCount}
                 </Badge>
               </div>
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full sm:w-auto">
               {errorCount > 0 && (
                 <Button 
                   variant="outline" 
                   size="sm"
                   onClick={downloadErrorsCSV}
+                  className="flex-1 sm:flex-none"
                 >
-                  <Download className="mr-2 h-4 w-4" />
-                  Descargar Errores
+                  <Download className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="text-xs sm:text-sm">Descargar Errores</span>
                 </Button>
               )}
               {(validCount > 0 || errorCount > 0) && (
@@ -420,8 +421,9 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
                   size="sm"
                   onClick={handleClearPreview}
                   disabled={isValidating || isUploading}
+                  className="flex-1 sm:flex-none"
                 >
-                  Limpiar Vista Previa
+                  <span className="text-xs sm:text-sm">Limpiar Vista Previa</span>
                 </Button>
               )}
             </div>
@@ -437,19 +439,19 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
           <Button 
             onClick={() => fileInputRef.current?.click()}
             disabled={isValidating || isUploading}
-            className="w-full"
+            className="w-full py-5 sm:py-2.5 text-sm sm:text-base"
           >
-            <FileSpreadsheet className="mr-2 h-5 w-5" />
+            <FileSpreadsheet className="mr-2 h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
             {isValidating ? "Validando archivo..." : "Seleccionar archivo CSV"}
           </Button>
 
           {errors.length > 0 && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
+            <Alert variant="destructive" className="px-3 py-2 sm:px-4 sm:py-3">
+              <AlertCircle className="h-4 w-4 shrink-0" />
               <AlertDescription>
-                <strong>Errores encontrados ({errors.length}):</strong>
-                <ScrollArea className="h-40 mt-2">
-                  <div className="space-y-2 text-sm">
+                <strong className="text-sm">Errores encontrados ({errors.length}):</strong>
+                <ScrollArea className="h-32 sm:h-40 mt-2">
+                  <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
                     {errors.map((error, i) => (
                       <div key={i} className="border-l-2 border-destructive pl-3 py-1">
                         <div className="font-semibold">Fila {error.row} - Campo: {error.field}</div>
@@ -463,9 +465,9 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
           )}
 
           {records.length > 0 && (
-            <div className="border rounded-lg">
-              <div className="p-3 bg-muted">
-                <span className="font-semibold">Vista Previa de Registros Válidos ({records.length})</span>
+            <div className="border rounded-lg overflow-hidden">
+              <div className="p-2 sm:p-3 bg-muted">
+                <span className="font-semibold text-xs sm:text-sm">Vista Previa de Registros Válidos ({records.length})</span>
               </div>
               
               <ScrollArea className="h-[300px]">
@@ -513,13 +515,14 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
           )}
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isUploading}>
+        <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0 mt-4 sm:mt-0">
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isUploading} className="w-full sm:w-auto">
             Cancelar
           </Button>
           <Button 
             onClick={handleConfirmUpload} 
             disabled={records.length === 0 || isUploading}
+            className="w-full sm:w-auto"
           >
             {isUploading ? "Creando OT..." : `Confirmar Carga (${records.length} registros)`}
           </Button>
