@@ -167,7 +167,7 @@ export function ObservationsPanel({ orderId }: ObservationsPanelProps) {
               size="sm"
               onClick={() => setObservationType("info")}
               disabled={saving}
-              className="min-h-[40px]"
+              className="flex-1 min-w-[100px] min-h-[44px]"
             >
               <Info className="mr-2 h-4 w-4" />
               Info
@@ -177,7 +177,7 @@ export function ObservationsPanel({ orderId }: ObservationsPanelProps) {
               size="sm"
               onClick={() => setObservationType("warning")}
               disabled={saving}
-              className="min-h-[40px]"
+              className="flex-1 min-w-[100px] min-h-[44px]"
             >
               <AlertTriangle className="mr-2 h-4 w-4" />
               Alerta
@@ -187,7 +187,7 @@ export function ObservationsPanel({ orderId }: ObservationsPanelProps) {
               size="sm"
               onClick={() => setObservationType("success")}
               disabled={saving}
-              className="min-h-[40px]"
+              className="flex-1 min-w-[100px] min-h-[44px]"
             >
               <CheckCircle2 className="mr-2 h-4 w-4" />
               Éxito
