@@ -343,12 +343,6 @@ export function ChecklistForm({ orderId }: ChecklistFormProps) {
             </Badge>
           </div>
         </div>
-        {(tipoEquipo || templateSource) && (
-          <div className="text-xs text-muted-foreground mt-1 space-y-0.5 break-words">
-            <p>Plantilla: {tipoEquipo || "Genérica (DEFAULT)"}</p>
-            <p>Origen: {templateSource === "EQUIPO_VINCULADO" ? "Equipo vinculado" : templateSource === "FALLBACK_OT" ? "FALLBACK (texto OT)" : "DEFAULT (sin match)"}</p>
-          </div>
-        )}
         <div className="mt-4 space-y-2">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Progreso General</span>
@@ -367,7 +361,7 @@ export function ChecklistForm({ orderId }: ChecklistFormProps) {
         {items.map((item) => (
           <div
             key={item.id}
-            className={`p-3 sm:p-4 border rounded-lg space-y-3 transition-smooth ${
+            className={`p-2.5 sm:p-4 border rounded-lg space-y-3 transition-smooth ${
               item.completed ? "bg-muted/30" : "bg-card"
             }`}
           >

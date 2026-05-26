@@ -208,17 +208,17 @@ export function PhotoCapture({ orderId }: PhotoCaptureProps) {
 
   return (
     <Card className="shadow-notion">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Camera className="h-5 w-5" />
+      <CardHeader className="p-3 sm:p-6">
+        <CardTitle className="flex flex-wrap items-center gap-2 text-base sm:text-lg min-w-0 break-words">
+          <Camera className="h-5 w-5 shrink-0" />
           Registro Fotográfico
         </CardTitle>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-muted-foreground break-words">
           Formatos: JPG, PNG, PDF · Máx: {MAX_FILE_SIZE_MB} MB
         </p>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 p-3 sm:p-6 pt-0 sm:pt-0">
         <div className="space-y-3">
           <div className="space-y-2">
             <Label htmlFor="caption">Descripción de la foto</Label>
@@ -272,8 +272,8 @@ export function PhotoCapture({ orderId }: PhotoCaptureProps) {
         </div>
 
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h4 className="text-sm font-medium">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h4 className="text-sm font-medium break-words min-w-0">
               Fotos Registradas ({photos.length})
             </h4>
           </div>
@@ -300,7 +300,7 @@ export function PhotoCapture({ orderId }: PhotoCaptureProps) {
                   className="relative group rounded-lg overflow-hidden border bg-muted"
                 >
                   {photo.storagePath.endsWith(".pdf") ? (
-                    <div className="w-full h-40 flex items-center justify-center bg-muted">
+                    <div className="w-full h-32 sm:h-40 flex items-center justify-center bg-muted">
                       <div className="text-center">
                         <ImageIcon className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
                         <p className="text-xs text-muted-foreground">PDF</p>
@@ -310,7 +310,7 @@ export function PhotoCapture({ orderId }: PhotoCaptureProps) {
                     <img
                       src={photo.url}
                       alt={photo.caption}
-                      className="w-full h-40 object-cover"
+                      className="w-full h-32 sm:h-40 object-cover"
                     />
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-smooth">
