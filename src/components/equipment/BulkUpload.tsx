@@ -319,16 +319,16 @@ const BulkUpload = ({ onClose }: BulkUploadProps) => {
         <>
           <Card>
             <CardContent className="pt-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+                <div className="flex flex-wrap items-center gap-2 min-w-0">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
                   <h3 className="font-semibold">Vista Previa</h3>
                   <Badge variant="outline">{preview.length} equipos válidos</Badge>
                 </div>
               </div>
 
               <div className="rounded-md border overflow-x-auto">
-                <Table>
+                <Table className="min-w-[700px]">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Nombre</TableHead>
@@ -362,11 +362,11 @@ const BulkUpload = ({ onClose }: BulkUploadProps) => {
             </CardContent>
           </Card>
 
-          <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={onClose} disabled={uploading}>
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-3">
+            <Button variant="outline" onClick={onClose} disabled={uploading} className="w-full sm:w-auto">
               Cancelar
             </Button>
-            <Button onClick={handleConfirmUpload} disabled={uploading || errors.length > 0}>
+            <Button onClick={handleConfirmUpload} disabled={uploading || errors.length > 0} className="w-full sm:w-auto">
               {uploading ? "Cargando..." : `Confirmar Carga de ${preview.length} Equipos`}
             </Button>
           </div>

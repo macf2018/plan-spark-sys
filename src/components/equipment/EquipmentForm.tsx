@@ -453,11 +453,11 @@ const EquipmentForm = ({ equipmentId, onClose }: EquipmentFormProps) => {
         />
       </div>
 
-      <div className="flex justify-end gap-3">
-        <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+      <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-3">
+        <Button type="button" variant="outline" onClick={onClose} disabled={loading} className="w-full sm:w-auto">
           Cancelar
         </Button>
-        <Button type="submit" disabled={loading}>
+        <Button type="submit" disabled={loading} className="w-full sm:w-auto">
           {loading ? "Guardando..." : equipmentId ? "Actualizar" : "Crear"}
         </Button>
       </div>
