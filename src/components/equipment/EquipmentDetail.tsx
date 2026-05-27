@@ -279,16 +279,16 @@ const EquipmentDetail = ({ equipmentId, onClose }: EquipmentDetailProps) => {
             <div className="space-y-4">
               {history.map((record, index) => (
                 <div key={record.id}>
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
                         <Badge variant="outline">{estadoLabels[record.estado_anterior]}</Badge>
                         <span className="text-muted-foreground">→</span>
                         <Badge>{estadoLabels[record.estado_nuevo]}</Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground">{record.observacion}</p>
+                      <p className="text-sm text-muted-foreground break-words">{record.observacion}</p>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground sm:whitespace-nowrap">
                       {format(new Date(record.fecha_cambio), "dd/MM/yyyy HH:mm", { locale: es })}
                     </p>
                   </div>

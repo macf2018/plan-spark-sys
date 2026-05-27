@@ -235,9 +235,9 @@ const EquipmentList = ({ onEdit, refreshTrigger }: EquipmentListProps) => {
   return (
     <>
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="pt-6 px-3 sm:px-6">
           <div className="flex flex-col gap-4 mb-6">
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
@@ -247,7 +247,7 @@ const EquipmentList = ({ onEdit, refreshTrigger }: EquipmentListProps) => {
                   className="pl-10"
                 />
               </div>
-              <Button onClick={exportToCSV} variant="outline" size="default">
+              <Button onClick={exportToCSV} variant="outline" size="default" className="w-full sm:w-auto">
                 <Download className="mr-2 h-4 w-4" />
                 Exportar CSV
               </Button>
@@ -345,9 +345,9 @@ const EquipmentList = ({ onEdit, refreshTrigger }: EquipmentListProps) => {
             </div>
           </div>
 
-          <div className="rounded-md border overflow-x-auto">
+          <div className="rounded-md border overflow-x-auto -mx-3 sm:mx-0">
             <TooltipProvider>
-              <Table>
+              <Table className="min-w-[800px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>ID</TableHead>

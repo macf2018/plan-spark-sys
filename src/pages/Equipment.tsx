@@ -38,20 +38,20 @@ const Equipment = () => {
     <div className="min-h-screen bg-background">
       <Header title="Gestión de Equipos" />
       
-      <main className="container mx-auto p-6 space-y-6">
-        <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-          <div>
-            <h2 className="text-2xl font-semibold text-foreground">Inventario de Equipos</h2>
+      <main className="container mx-auto p-4 sm:p-6 space-y-6">
+        <div className="flex flex-col sm:flex-row gap-4 sm:justify-between sm:items-center">
+          <div className="min-w-0">
+            <h2 className="text-xl sm:text-2xl font-semibold text-foreground break-words">Inventario de Equipos</h2>
             <p className="text-sm text-muted-foreground mt-1">
               Gestiona equipos, estados, mantenimiento e historial
             </p>
           </div>
-          <div className="flex gap-3">
-            <Button onClick={() => setIsBulkUploadOpen(true)} variant="outline">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+            <Button onClick={() => setIsBulkUploadOpen(true)} variant="outline" className="w-full sm:w-auto">
               <Upload className="mr-2 h-4 w-4" />
               Carga Masiva
             </Button>
-            <Button onClick={handleAddEquipment}>
+            <Button onClick={handleAddEquipment} className="w-full sm:w-auto">
               <Plus className="mr-2 h-4 w-4" />
               Agregar Equipo
             </Button>
@@ -64,7 +64,7 @@ const Equipment = () => {
         />
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="w-[95vw] max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {selectedEquipmentId ? "Editar Equipo" : "Agregar Nuevo Equipo"}
@@ -81,7 +81,7 @@ const Equipment = () => {
         </Dialog>
 
         <Dialog open={isBulkUploadOpen} onOpenChange={setIsBulkUploadOpen}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Carga Masiva de Equipos</DialogTitle>
               <DialogDescription>
