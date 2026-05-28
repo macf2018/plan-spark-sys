@@ -355,6 +355,43 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
     toast.success("Errores descargados como CSV");
   };
 
+  const handleDownloadTemplate = () => {
+    const exampleRow = {
+      anio: "2025",
+      mes: "6",
+      fecha_programada: "2025-06-15",
+      nombre_sitio: "Sitio de Ejemplo",
+      tramo: "Tramo Norte",
+      pk: "01+002",
+      tipo_equipo: "Shelter",
+      tipo_mantenimiento: "Preventivo",
+      frecuencia: "Mensual",
+      proveedor_codigo: "PROV001",
+      proveedor_nombre: "Proveedor Ejemplo S.A.",
+      criticidad: "Alta",
+      ventana_horaria: "08:00-17:00",
+      descripcion_trabajo: "Mantenimiento preventivo mensual del equipo"
+    };
+
+    const csv = Papa.unparse({
+      fields: REQUIRED_COLUMNS,
+      data: [exampleRow]
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'plantilla_plan_anual.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast.success("Plantilla descargada: plantilla_plan_anual.csv");
+  };
+
   const totalRows = records.length + errors.length;
   const validCount = records.length;
   const errorCount = errors.length;
@@ -429,21 +466,32 @@ export function AnnualPlanUpload({ open, onOpenChange }: AnnualPlanUploadProps) 
             </div>
           </div>
 
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".csv"
-            onChange={handleFileUpload}
-            className="hidden"
-          />
-          <Button 
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isValidating || isUploading}
-            className="w-full py-5 sm:py-2.5 text-sm sm:text-base"
-          >
-            <FileSpreadsheet className="mr-2 h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
-            {isValidating ? "Validando archivo..." : "Seleccionar archivo CSV"}
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={handleDownloadTemplate}
+              disabled={isValidating || isUploading}
+              className="w-full sm:w-auto py-5 sm:py-2.5 text-sm sm:text-base"
+            >
+              <Download className="mr-2 h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+              Descargar plantilla CSV
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+            <Button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isValidating || isUploading}
+              className="w-full sm:w-auto py-5 sm:py-2.5 text-sm sm:text-base"
+            >
+              <FileSpreadsheet className="mr-2 h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+              {isValidating ? "Validando archivo..." : "Seleccionar archivo CSV"}
+            </Button>
+          </div>
 
           {errors.length > 0 && (
             <Alert variant="destructive" className="px-3 py-2 sm:px-4 sm:py-3">
